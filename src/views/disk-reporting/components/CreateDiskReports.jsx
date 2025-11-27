@@ -1,0 +1,252 @@
+import * as React from 'react';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Box,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Grid,
+  FormHelperText,
+  Typography,
+} from '@mui/material';
+import { IconX } from '@tabler/icons-react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import PropTypes from 'prop-types';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
+const validationSchema = Yup.object().shape({
+  start_date: Yup.date()
+    .required('Start date is required')
+    .nullable()
+    .typeError('Start date must be a valid date'),
+  end_date: Yup.date()
+    .required('End date is required')
+    .nullable()
+    .typeError('End date must be a valid date')
+    .min(Yup.ref('start_date'), 'End date must be on or after start date'),
+  executive_summary: Yup.string().required('Executive summary is required'),
+  introduction: Yup.string().required('Introduction is required'),
+  performance_indicators: Yup.string().required('Performance indicators are required'),
+  monthly_actions: Yup.string().required('Monthly actions are required'),
+  budget_utilization: Yup.string().required('Budget utilization is required'),
+  challenges: Yup.string().required('Challenges are required'),
+  corrective_actions: Yup.string().required('Corrective actions are required'),
+  next_steps: Yup.string().required('Next steps are required'),
+  conclusion: Yup.string().required('Conclusion is required'),
+});
+
+const ReportForm = ({
+  open,
+  isSubmitting,
+  onClose,
+  onSubmit,
+  initialValues: propInitialValues,
+  isUpdate = false,
+}) => {
+  // Helper function to format dates for input[type="date"]
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ''; // Invalid date
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
+  const defaultValues = {
+    start_date: '',
+    end_date: '',
+    executive_summary: '',
+    introduction: '',
+    performance_indicators: '',
+    monthly_actions: '',
+    budget_utilization: '',
+    challenges: '',
+    corrective_actions: '',
+    next_steps: '',
+    conclusion: '',
+  };
+
+  // Format initial values when editing
+  const formattedInitialValues = propInitialValues ? {
+    ...propInitialValues,
+    start_date: formatDateForInput(propInitialValues.start_date),
+    end_date: formatDateForInput(propInitialValues.end_date),
+  } : defaultValues;
+
+  const formik = useFormik({
+    initialValues: formattedInitialValues,
+    validationSchema,
+    onSubmit: (values) => {
+      // Format dates consistently before submission
+      const formattedValues = {
+        ...values,
+        start_date: values.start_date || null,
+        end_date: values.end_date || null,
+      };
+      onSubmit(formattedValues);
+    },
+  });
+
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+      ['link'],
+      ['clean'],
+    ],
+  };
+
+  const quillFormats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'blockquote',
+    'list',
+    'bullet',
+    'indent',
+    'link',
+  ];
+
+  React.useEffect(() => {
+    if (!open) {
+      formik.resetForm();
+    } else if (propInitialValues) {
+      // Update form values when opening with new initial values
+      formik.setValues({
+        ...propInitialValues,
+        start_date: formatDateForInput(propInitialValues.start_date),
+        end_date: formatDateForInput(propInitialValues.end_date),
+      });
+    }
+  }, [open, propInitialValues]);
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: 2 } }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 2 }}>
+        <DialogTitle variant="h3">{isUpdate ? 'Update' : 'Create'} Report</DialogTitle>
+        <IconButton onClick={onClose}>
+          <IconX size={20} />
+        </IconButton>
+      </Box>
+      <form onSubmit={formik.handleSubmit}>
+        <DialogContent>
+          <Grid container spacing={2}>
+            {/* Date Fields */}
+            <Grid container spacing={2} display="flex" flexDirection="row" alignItems="center">
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Start Date"
+                  name="start_date"
+                  type="date"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  value={formik.values.start_date || ''}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.start_date && Boolean(formik.errors.start_date)}
+                  helperText={formik.touched.start_date && formik.errors.start_date}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="End Date"
+                  name="end_date"
+                  type="date"
+                  fullWidth
+                  InputLabelProps={{ shrink: true }}
+                  value={formik.values.end_date || ''}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.end_date && Boolean(formik.errors.end_date)}
+                  helperText={formik.touched.end_date && formik.errors.end_date}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Rich Text Fields */}
+            {[
+              'executive_summary',
+              'introduction',
+              'performance_indicators',
+              'monthly_actions',
+              'budget_utilization',
+              'challenges',
+              'corrective_actions',
+              'next_steps',
+              'conclusion',
+            ].map((name) => (
+              <Grid item xs={12} key={name}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold', textTransform: 'capitalize' }}>
+                  {name.replace(/_/g, ' ')}
+                </Typography>
+                <ReactQuill
+                  theme="snow"
+                  value={formik.values[name]}
+                  onChange={(value) => formik.setFieldValue(name, value)}
+                  onBlur={() => formik.setFieldTouched(name, true)}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  style={{ height: 'auto', marginBottom: '40px' }}
+                />
+                {formik.touched[name] && formik.errors[name] && (
+                  <FormHelperText error sx={{ mt: 6 }}>
+                    {formik.errors[name]}
+                  </FormHelperText>
+                )}
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} color="primary" variant="outlined">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+            {isSubmitting ? <CircularProgress size={24} color="inherit" /> : isUpdate ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+};
+
+ReportForm.propTypes = {
+  open: PropTypes.bool.isRequired,
+  isSubmitting: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  initialValues: PropTypes.shape({
+    start_date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    end_date: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    executive_summary: PropTypes.string,
+    introduction: PropTypes.string,
+    performance_indicators: PropTypes.string,
+    monthly_actions: PropTypes.string,
+    budget_utilization: PropTypes.string,
+    challenges: PropTypes.string,
+    corrective_actions: PropTypes.string,
+    next_steps: PropTypes.string,
+    conclusion: PropTypes.string,
+  }),
+  isUpdate: PropTypes.bool,
+};
+
+ReportForm.defaultProps = {
+  initialValues: null,
+  isSubmitting: false,
+  isUpdate: false,
+};
+
+export default ReportForm;
