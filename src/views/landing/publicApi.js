@@ -9,7 +9,7 @@ function buildUrl(endpoint) {
 }
 
 export async function fetchPricingPlans() {
-  const url = buildUrl('/plans');
+  const url = 'https://backend.wutet.com/api/central/plans';
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
 
   if (!res.ok) throw new Error('Failed to load pricing plans');
