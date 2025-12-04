@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, FormControl, FormHelperText, InputLabel, OutlinedInput } from '@mui/material';
 import { useFormik } from 'formik';
 import DrogaFormModal from 'ui-component/modal/DrogaFormModal';
@@ -7,23 +7,32 @@ import * as Yup from 'yup';
 import DateRangesPicker from './DateRangesPicker';
 
 const validationSchema = Yup.object().shape({
-  year: Yup.string().required('The year label is required')
+  name: Yup.string().required('Fiscal year name is required'),
+  year: Yup.string().required('The year label is required'),
+  description: Yup.string().required('Description is required'),
 });
 
 const EditFiscalYear = ({ open, fiscal, handleCloseModal, handleSubmission, submitting }) => {
-  console.log(fiscal);
   const [startDate, setStartDate] = useState(new Date(fiscal.start_date));
   const [endDate, setEndDate] = useState(new Date(fiscal.end_date));
 
   const formik = useFormik({
+    enableReinitialize: true, // Important to update form when fiscal changes
     initialValues: {
-      year: fiscal.year
+      name: fiscal.name || '',
+      year: fiscal.year || '',
+      description: fiscal.description || '',
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: (values) => {
-      handleSubmission({ ...values, start_date: startDate, end_date: endDate });
-    }
+      handleSubmission({
+        ...values,
+        start_date: startDate.toISOString().split('T')[0], // format YYYY-MM-DD
+        end_date: endDate.toISOString().split('T')[0],     // format YYYY-MM-DD
+      });
+    },
   });
+
   return (
     <DrogaFormModal
       open={open}
@@ -33,18 +42,62 @@ const EditFiscalYear = ({ open, fiscal, handleCloseModal, handleSubmission, subm
       onSubmit={formik.handleSubmit}
       submitting={submitting}
     >
-      <FormControl fullWidth error={formik.touched.year && Boolean(formik.errors.year)}>
-        <InputLabel htmlFor="year">Year Label</InputLabel>
-        <OutlinedInput id="year" name="year" label="year name" value={formik.values.year} onChange={formik.handleChange} fullWidth />
-        {formik.touched.year && formik.errors.year && (
-          <FormHelperText error id="standard-weight-helper-text-year">
-            {formik.errors.year}
-          </FormHelperText>
+      {/* Name */}
+      <FormControl fullWidth sx={{ mb: 2 }} error={formik.touched.name && Boolean(formik.errors.name)}>
+        <InputLabel htmlFor="name">Fiscal Year Name</InputLabel>
+        <OutlinedInput
+          id="name"
+          name="name"
+          label="Fiscal Year Name"
+          value={formik.values.name}
+          onChange={formik.handleChange}
+          fullWidth
+        />
+        {formik.touched.name && formik.errors.name && (
+          <FormHelperText error>{formik.errors.name}</FormHelperText>
         )}
       </FormControl>
 
-      <Box sx={{ marginTop: 4 }}>
-        <DateRangesPicker startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
+      {/* Year */}
+      <FormControl fullWidth sx={{ mb: 2 }} error={formik.touched.year && Boolean(formik.errors.year)}>
+        <InputLabel htmlFor="year">Year Label</InputLabel>
+        <OutlinedInput
+          id="year"
+          name="year"
+          label="Year"
+          value={formik.values.year}
+          onChange={formik.handleChange}
+          fullWidth
+        />
+        {formik.touched.year && formik.errors.year && (
+          <FormHelperText error>{formik.errors.year}</FormHelperText>
+        )}
+      </FormControl>
+
+      {/* Description */}
+      <FormControl fullWidth sx={{ mb: 2 }} error={formik.touched.description && Boolean(formik.errors.description)}>
+        <InputLabel htmlFor="description">Description</InputLabel>
+        <OutlinedInput
+          id="description"
+          name="description"
+          label="Description"
+          value={formik.values.description}
+          onChange={formik.handleChange}
+          fullWidth
+        />
+        {formik.touched.description && formik.errors.description && (
+          <FormHelperText error>{formik.errors.description}</FormHelperText>
+        )}
+      </FormControl>
+
+      {/* Date Range Picker */}
+      <Box sx={{ mt: 4 }}>
+        <DateRangesPicker
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+        />
       </Box>
     </DrogaFormModal>
   );
@@ -52,10 +105,10 @@ const EditFiscalYear = ({ open, fiscal, handleCloseModal, handleSubmission, subm
 
 EditFiscalYear.propTypes = {
   open: PropTypes.bool,
-  fiscal: PropTypes.array,
+  fiscal: PropTypes.object.isRequired, // changed from array to object
   handleCloseModal: PropTypes.func,
-  handleTaskSubmission: PropTypes.func,
-  submitting: PropTypes.bool
+  handleSubmission: PropTypes.func,
+  submitting: PropTypes.bool,
 };
 
 export default EditFiscalYear;

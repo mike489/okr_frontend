@@ -67,7 +67,8 @@ const Objective = () => {
   const handleFetchingObjective = async () => {
     setLoading(true);
     const token = await GetToken();
-    const Api = `${Backend.api}${Backend.objectives}?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
+  const Api = Backend.pmsUrl(Backend.objectives)
+  + `?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
 
     try {
       const response = await fetch(Api, {
@@ -75,6 +76,7 @@ const Objective = () => {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
       });
       const responseData = await response.json();
@@ -100,7 +102,7 @@ const Objective = () => {
   const handleObjectiveAddition = async (values) => {
     setIsAdding(true);
     const token = await GetToken();
-    const Api = Backend.api + Backend.objectives;
+    const Api = Backend.pmsUrl(Backend.objectives);
 
     try {
       const response = await fetch(Api, {
@@ -108,6 +110,7 @@ const Objective = () => {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
         body: JSON.stringify(values),
       });
@@ -131,7 +134,7 @@ const Objective = () => {
   const handleObjectiveUpdate = async (values) => {
     setIsEditing(true);
     const token = await GetToken();
-    const Api = `${Backend.api}${Backend.objectives}/${selectedObjective?.id}`;
+  const Api = Backend.pmsUrl(`${Backend.objectives}/${selectedObjective?.id}`);
 
     try {
       const response = await fetch(Api, {
@@ -139,6 +142,7 @@ const Objective = () => {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
         body: JSON.stringify(values),
       });
@@ -170,14 +174,14 @@ const Objective = () => {
 
     setIsDeleting(true);
     const token = await GetToken();
-    const Api = `${Backend.api}${Backend.objectives}/${objective.id}`;
-
+    const Api = Backend.pmsUrl(`${Backend.objectives}/${objective?.id}`);
     try {
       const response = await fetch(Api, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          Accept: 'application/json'
         },
       });
 

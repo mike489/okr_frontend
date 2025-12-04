@@ -12,39 +12,45 @@ const GetFiscalYear = () => {
   useEffect(() => {
     const handleGettingFiscalYear = async () => {
       try {
-        const Api = Backend.api + Backend.fiscalYear;
         const token = await GetToken();
+        const Api = Backend.pmsUrl(Backend.fiscal_years); // tenant-aware API
 
         const response = await fetch(Api, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
           }
         });
 
-        const data = await response.json();
+        const result = await response.json();
 
-        if (data.success) {
-          dispatch({ type: SET_FISCAL_YEARS, fiscalYears: data?.data.data });
+        if (response.ok && result.success) {
+          const fiscalYears = result.data?.data || []; // <--- extract array from data.data
+          dispatch({ type: SET_FISCAL_YEARS, fiscalYears });
+
+          // Set selected fiscal year
           if (selectedFiscal?.id) {
-            const selected = data?.data?.data.find((year) => year.id == selectedFiscal?.id);
-            if (data.data.data.length > 0) {
+            const selected = fiscalYears.find((year) => year.id === selectedFiscal.id);
+            if (selected) {
               dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: selected });
             }
-          } else if (data.data.data.length > 0) {
-            dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: data.data?.data[0] });
+          } else if (fiscalYears.length > 0) {
+            dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: fiscalYears[0] });
           }
-        } else if (data.message === 'Unauthorized') {
+        } else if (result.message === 'Unauthorized') {
           logout();
+        } else {
+          console.error('Failed to fetch fiscal years:', result.message);
         }
       } catch (error) {
-        console.log(`Error fetching fiscal year: ${error.message}`);
+        console.error(`Error fetching fiscal year: ${error.message}`);
       }
     };
 
     handleGettingFiscalYear();
-  }, []);
+  }, [dispatch, selectedFiscal]);
 
   return null;
 };

@@ -25,10 +25,6 @@ import Fallbacks from 'utils/components/Fallbacks';
 import KeyResultForm from './components/KeyResultForm';
 import KeyResultsTable from './components/KeyResultsTable';
 
-
-
-
-
 const KeyResults = () => {
   const theme = useTheme();
 
@@ -38,6 +34,10 @@ const KeyResults = () => {
   const [loading, setLoading] = useState(true);
   const [objectives, setObjectives] = useState([]);
   const [selectedObjective, setSelectedObjective] = useState(null);
+console.log("Windows:", window.location.hostname)
+// const tenant = window.location.hostname;
+const tenant = localStorage.getItem('current_tenant');
+console.log("Tenant:", tenant);
 
   const [keyResults, setKeyResults] = useState([]);
   const [pagination, setPagination] = useState({
@@ -66,7 +66,7 @@ const KeyResults = () => {
   const handleFetchObjectives = async () => {
     try {
       const token = await GetToken();
-      const response = await fetch(Backend.api + Backend.objectives, {
+      const response = await fetch(Backend.pmsUrl(Backend.objectives), {
         headers: { Authorization: `Bearer ${token}`, accept: 'application/json' },
       });
       const data = await response.json();
@@ -108,9 +108,16 @@ const KeyResults = () => {
       params.append('page', pagination.page + 1);
       params.append('per_page', pagination.per_page);
 
-      const response = await fetch(`${Backend.api}${Backend.keyResults}?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}`, accept: 'application/json' },
-      });
+     const response = await fetch(
+  Backend.pmsUrl(Backend.keyResults) + '?' + params.toString(),
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: 'application/json',
+    },
+  }
+);
+
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -160,15 +167,19 @@ const KeyResults = () => {
     setActionLoading(true);
     try {
       const token = await GetToken();
-      const response = await fetch(Backend.api + Backend.keyResults, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          accept: 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
+    const response = await fetch(
+  Backend.pmsUrl(Backend.keyResults),
+  {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify(values),
+  }
+);
+
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -191,15 +202,19 @@ const KeyResults = () => {
     setActionLoading(true);
     try {
       const token = await GetToken();
-      const response = await fetch(`${Backend.api}${Backend.keyResults}/${selectedKR.id}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          accept: 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+  Backend.pmsUrl(`${Backend.keyResults}/${selectedKR.id}`),
+  {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify(values),
+  }
+);
+
       const data = await response.json();
 
       if (response.ok && data.success) {
@@ -222,7 +237,8 @@ const KeyResults = () => {
 
     try {
       const token = await GetToken();
-      const response = await fetch(`${Backend.api}${Backend.keyResults}/${id}`, {
+      const response = await fetch(
+  Backend.pmsUrl(`${Backend.keyResults}/${id}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

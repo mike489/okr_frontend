@@ -1,240 +1,143 @@
+// ================================
+// Base URLs from .env
+// ================================
+const PMS_API = import.meta.env.VITE_PMS_URL;   // Example: https://backend.wutet.com
+const AUTH_API = import.meta.env.VITE_AUTH_URL; // Example: https://backend.wutet.com/auth
+
+
+// ================================
+// Read tenant from localStorage
+// ================================
+const getTenant = () => {
+  return localStorage.getItem('current_tenant') || '';
+};
+
+
+// ================================
+// Build Tenant-Based PMS API URL
+// Example → https://backend.wutet.com/acme/api/objectives
+// ================================
+const pmsUrl = (path) => {
+  const tenant = getTenant();
+  return `${PMS_API}/${tenant}/api/${path}`;
+};
+
+
+// ================================
+// Build AUTH API URL (no tenant)
+// Example → https://backend.wutet.com/auth/login
+// ================================
+const authUrl = (path) => {
+  return `${AUTH_API}/${path}`;
+};
+
+
+// ================================
+// BACKEND ROUTES
+// ================================
 const Backend = {
-  api: import.meta.env.VITE_PMS_URL,
-  auth: import.meta.env.VITE_AUTH_URL,
+  /** Base */
+  api: PMS_API,
+  auth: AUTH_API,
+
+  /** Auth */
   login: 'login',
   logout: 'logout',
-  users: 'users',
-  getUserTasks: 'get-user-tasks',
-  userStatus: 'user-active-inactive',
   refreshToken: 'refresh',
   resetPassword: 'reset-password',
   setPassword: 'create-password',
   verifyOtp: 'verify-otp',
-  myProfile: 'my-profile',
   changePassword: 'change-password',
-  myUnit: 'my-unit',
-  keyResults:'key-results',
-  initiatives: 'inititatives',
-  changeuserPassword: 'change-user-password',
+
+  /** Users */
+  users: 'users',
+  myProfile: 'my-profile',
   updateProfileImage: 'update-profile-image',
   removeProfileImage: 'remove-profile-image',
+  changeuserPassword: 'change-user-password',
+
+  /** Units & Roles */
   roles: 'roles',
   units: 'units',
-  getActivityType: 'activity-types-paginated',
-  activityType: 'activity-types',
-  unitsImanage: 'units-i-manage',
   allUnits: 'units',
-  objectives: 'objectives',
-  initiatives: 'initiatives',
+  myUnit: 'my-unit',
+  unitsImanage: 'units-i-manage',
   unitByTypes: 'unit-by-type/',
   getManagers: 'get-managers',
-  MainActivities: 'my-main-activities',
-  mainActivities: 'main-activities',
   types: 'unit-types',
-  getAllTasks: 'all-tasks',
+
+  /** Objectives, KPIs, Key Results */
+  objectives: 'objectives',
+  keyResults: 'key-results',
+  initiatives: 'initiatives',
+  planInitiative: 'update-initiative/',
+
+  /** Tasks & Monitoring */
+  tasks: 'tasks',
+  createTask: 'create-task',
+  approveTask: 'approve-task',
+  getPendingTasks: 'pending-tasks',
+  monitoring: 'monitorings',
+  childMonitoring: 'child-monitorings',
+  myDay: 'my-day',
+
+  /** Employees */
   employees: 'employees',
   employeeDashboard: 'get-employee-home-dashboard',
+  employeeTasks: 'employee-tasks',
+  employeeTaskStatus: 'update-employee-task-status/',
+  employeePerformance: 'employee-performance/',
+
+  /** Uploads */
   employeeExcel: 'employees/upload',
   unitexcel: 'units/upload',
   mainactivityexcel: 'import-activities',
-  kpi: 'kpis',
-  getStats: 'get-counts',
-  preSetups: 'kpi-pre-setups',
-  fiscalYear: 'fiscal-years',
-  approveTask: 'approve-task',
-  periods: 'periods',
-  frequencies: 'frequencies',
-  planningPeriods: 'get-planing-period',
-  planningFrequiencies: 'get-planing-frequencies',
-  PeriodDefinition: 'create-frequency-definition-period',
-  updatePeriod: 'update-period/',
-  periodTimeline: 'period-timeline',
-  changeStatus: 'change-period-status/',
-  orgPlan: 'main-kpi-tracking',
-  unitsPlan: 'unit-kpi-tracking',
-  planStatus: 'change-plan-status',
-  managerAction: 'manager-action',
-  orgPlanUpdate: 'update-plan/',
-  getObjectives: 'get-objectives',
-  getObjectiveByPerspectives: 'get-objectives-by-perspective/',
-  showPlan: 'show-plan',
-  myDay: 'my-day',
-  verifyKpiDistribution: 'verify-kpi-plan-distribution/',
-  deletePlan: 'delete-plan',
-  getMyPlans: 'my-plans',
-  myPlans: 'my-plans',
-  getActivityTypes: 'activity-types',
-  planInitiative: 'update-initiative/',
-  initiatives: 'initiatives',
-  distributeTarget: 'distribute-kpi-tracking',
-  childUnits: 'get-my-child-units',
-  childTarget: 'get-my-child-targets/',
-  getChildUnits: 'get-child-departments',
-  getMyChildUnits: 'my-child-units',
-  getChildEmployees: 'my-child-employees',
-  getActiveChildEmployees: 'get-active-child-employees',
-  showTarget: 'show-target/',
-  plans: 'plans',
-  monitoring: 'monitorings',
-  childMonitoring:'child-monitorings',
-  getPendingTasks: 'pending-tasks',
-  getApprovalTasks: 'get-approval-tasks',
-  getPendingWeeklyTask: 'get-employee-pending-tasks',
-  getApprovalTasksDetail: 'get-approval-task-detail/',
-  getApprovalTaskRemarks: 'get-remarks-by-workflow/',
-  getPlanConversations: 'get-unit-remarks',
-  commentOnApprovalTask: 'create-workflow-comment/',
-  getDepartments: 'get-departments',
-  getActiveDepartments: 'get-active-departments',
-  getEmployees: 'get-employees',
-  getPlanReports:'get-plan-reports',
-  getActiveEmployees: 'get-active-employees',
-  measuringUnits: 'measuring-units',
-  getManagerUnits: 'units-i-manage',
-  setActiveUnit: 'active-unit/',
-  getUnitTarget: 'get-tasks-by-unit/',
-  getEmployeeTarget: 'get-tasks-by-employee/',
-  getEmployeePlan: 'get-employee-plan/',
-  submitEmployeePlan: 'verify-employee-plan/',
-  employeeProfile: 'employee-profile/',
-  employeePerformance: 'employee-performance/',
-  employeeTasks: 'employee-tasks',
-  tasks: 'tasks',
-  createTask: 'create-task',
-  taskCounts: 'task-count',
-  employeeTaskStatus: 'update-employee-task-status/',
-  employeeTaskRemark: 'create-task-remark/',
-  employeesTaskGraph: 'get-employee-task-graph',
-  subTasks: 'sub-tasks',
-  updateSubTaskStatus: 'update-sub-task-status/',
-  employeeTaskReport: 'get-employee-task-count',
-  employeeProfileTask: 'get-employee-task-count/',
-  leaderBoard: 'employee-task-performance-leader-board',
-  employeeLeaderboard: 'employee-performance-leaderboard',
-  unitLeaderboard: 'unit-performance-leaderboard',
-  notEngagedUnits: 'not-engaged-units',
-  notEngagedEmployees: 'not-engaged-employees',
-  myTaskGraph: 'my-task-graph',
-  measuringUnitsPaginated: 'measuring-units-paginated',
-  employeeEligiblity: 'employee-eligible/',
-  getEmployeeTask: 'get-employee-tasks/',
-  myTeams: 'my-teams',
-  weeklyTaskApproval: 'approve-employee-task/',
-  approveTask: 'approve-task/',
-  changeReportStatus: 'change-report-status/',
-  evaluate: 'evaluate',
-  monitor: 'monitor',
-  reporting: 'reporting',
-  myMainActivities: 'my-main-activities',
-  PlanReports: 'plan-reports',
-  AllReports: 'plan-reports-all',
-  myTeamsPlansReports: 'my-teams-report',
-  unitPerformance: 'unit-performance/',
-  myPerformance: 'my-performance',
-  perKPIPerformance: 'my-performance-per-kpi',
-  employeePerKpiPerformance: 'employee-performance-per-kpi/',
-  unitPerKPIPerformance: 'unit-performance-per-kpi/',
-  myUnitPerformance: 'my-unit-performance',
-  KPIPerformance: 'kpi-performance/employee/',
-  myPlansPaginated: 'my-plans-paginated',
-  myMonthlyTrends: 'monitoring-count',
-  myUnitMonthlyTrends: 'my-unit-monthly-performance-trend',
-  employeeMonthlyTrends: 'employee-monthly-performance-trend/',
-  unitMonthlyTrends: 'monitoring-count/',
-  perKPITrends: 'per-kpi-trend/',
-  childUnitsCount: 'child-units-count',
-  myPlanGrade: 'kpi-grade-count',
-  performance: 'performance',
-  myKPIS: 'my-kpis',
-  managerKPIS: 'my-unit-kpis',
-  workflows: 'workflows',
-  createWorkflow: 'create-workflow',
-  updateWorkflow: 'update-workflow',
-  deleteWorkflow: 'delete-workflow',
-
-  /**Eyuel Endpoints */
-  permissi: 'permissions',
-  role: 'roles',
-  fiscal_years: 'fiscal-years',
-  planning_periods: 'create-planning-period',
-  frequency_period_values: 'create-frequency-definition-period',
-  get_frequency_definition: 'get-frequency-definition-period',
-  evaluation_periods: 'create-evaluation-period',
-  get_evaluation_periods: 'get-evaluation-period',
-  sendEvaluation: 'confirm-evaluation/',
-  getEvaluationApprovalTasks: 'get-evaluation-approval-detail/',
-  getEvaluationApprovalRemark: 'get-evaluation-remarks-by-workflow/',
-  getMyEvaluation: 'get-my-evaluation-approval-detail',
-  evaluationWorkflowAction: 'change-evaluation-workflow-status',
-  evaluationTaskApproval: 'manager-evaluation-workflow-action/',
-  eodfetch: 'end-of-day-activities',
-  getCount: 'get-counts',
-  getHrCount: 'get-hr-counts',
-  getPendingTaskCount: 'get-sidenav-counts',
-  changeTaskStatus: 'change-task-status',
-  getEmployeesInDep: 'my-child-units-employee-count',
-  getRankings: 'rank-performance',
-  unitKpiPerformance: 'show-performance-chart',
-  unitEmployeeEndpoint: 'get-unit-employees-with-performance/',
-  getUnitEmployees: 'get-unit-employees/',
-  getUnitPlans: 'get-unit-plan/',
-  submitUnitPlan: 'verify-unit-plan/',
-  performanceratingscale: 'performance-rating-scales',
-  jobposition: 'job-positions',
-  allJobPosition: 'get-job-positions',
-  getSinglePeriods: 'get-single-periods',
-  planningPeriod: 'create-planning-period',
-  monitoringPeriod: 'create-monitoring-period',
-  revisionPeriod: 'create-revision-period',
-  perspectiveTypes: 'perspective-types',
-  evaluationTypes: 'evaluation-types',
   kpiExcell: 'kpis/upload',
   UnitExcell: 'units/upload',
   JobExcell: 'job-positions/upload',
 
+  /** Plans */
+  getMyPlans: 'my-plans',
+  myPlans: 'my-plans',
+  plans: 'plans',
+  planStatus: 'change-plan-status',
+  orgPlan: 'main-kpi-tracking',
+  unitsPlan: 'unit-kpi-tracking',
+  orgPlanUpdate: 'update-plan/',
+  showPlan: 'show-plan',
+  deletePlan: 'delete-plan',
+
+  /** Performance & Reporting */
+  performance: 'performance',
+  myPerformance: 'my-performance',
+  KPIPerformance: 'kpi-performance/employee/',
+  managerKPIS: 'my-unit-kpis',
+  unitPerformance: 'unit-performance/',
+  perKPIPerformance: 'my-performance-per-kpi',
+
+  /** Notifications */
   myNotification: 'my-notifications',
   readNotification: 'read-notification/',
   readAllNotification: 'read-all-notifications',
 
+  /** File Exports */
   exportPlans: 'export-planning',
   exportMonitoring: 'export-monitoring',
   exportPerformance: 'export-performance',
-
   exportMyPlans: 'export-my-planning',
   exportMyMonitoring: 'export-my-monitoring',
   exportMyPerformance: 'export-my-performance',
-  unitPlan: 'unit-plan',
-  unpaginatedUnitPlan: 'unit-plan-unpaginated',
-  unitMainActivities: 'unit-main-activities',
-  unitPlans: 'department-plan-status',
-  employeePlans: 'employees-plan-status',
-  planningByStatus: 'plan-status-counts',
-  exportPlanningStatus: 'export-employee-plan-status',
-  exportUnitPlanningStatus: 'export-department-plan-status',
 
-  exportManagersTaskStatus: 'export-managers-task-status',
-  exportEmployeesTaskStatus: 'export-employees-task-status',
-  exportManagersHasNoStatus: 'export-managers-has-no-task-status',
-  exportEmployeesHasNoStatus: 'export-employees-has-no-task-status',
+  /** EOD */
+  eodfetch: 'end-of-day-activities',
 
-  taskStatusCount: 'task-status-counts',
-  employeeTaskList: 'employees-task-status',
-  managerTaskList: 'managers-task-status',
-  employeeNoTaskList: 'employees-has-no-task-status',
-  managerNoTaskList: 'managers-has-no-task-status',
-  findEmployees: 'find-employees',
-  deleteEmployeesPlan: 'delete-employee-plans',
-  childEmployees: 'get-my-child-employees',
-  submitClonedEmployeePlan: 'clone-employee-plan',
-  childDepartments: 'get-my-child-departments',
-  submitClonedUnitPlan: 'clone-unit-plan',
-  risk: 'update-risk',
-  feedBack: 'feedbacks',
-  clonWeeklyTask: 'clone-weekly-task',
-  myFeedBack: 'my-feedbacks',
-  monitoringStatusCount: 'monitoring-status-counts',
-  employeeMonitoringList: 'employees-monitoring-status',
-  unitMonitoringList: 'department-monitoring-status',
-  delatedLogs: 'delete-logs',
+  /** Evaluation & Workflows */
+  evaluationWorkflowAction: 'change-evaluation-workflow-status',
+  evaluationTaskApproval: 'manager-evaluation-workflow-action/',
+
+  /** Helper Functions */
+  pmsUrl,
+  authUrl,
 };
+
 export default Backend;

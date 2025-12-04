@@ -70,7 +70,7 @@ export default function DeployingWorkspace({ tenant, status, progress = 0 }) {
           <Box>
             <CircularProgress size={90} thickness={6} sx={{ color: '#4c6ef5' }} />
             <Typography variant="body1" mt={4} color="text.secondary">
-              This usually takes 30–90 seconds
+              This usually takes 2 minutes
             </Typography>
           </Box>
         )}
