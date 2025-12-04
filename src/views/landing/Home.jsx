@@ -167,7 +167,10 @@ export default function Home() {
                 py: 2,
                 borderRadius: 4,
                 boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                '&:hover': { transform: 'translateY(-4px)' },
+
+                '&:hover': { transform: 'translateY(-4px)',
+                  bgcolor: 'white',
+                 },
               }}
             >
               Start Free Trial
@@ -177,7 +180,7 @@ export default function Home() {
             </Button>
           </Stack>
 
-          <Typography variant="body2" sx={{ mt: 5, opacity: 0.8 }}>
+          <Typography variant="body2" sx={{ mt: 5, opacity: 0.8 , color:'white'}}>
             No credit card • 7-day free trial • Setup in 2 minutes
           </Typography>
         </Container>
@@ -442,7 +445,7 @@ export default function Home() {
               fontSize: '1.3rem',
               borderRadius: 4,
               boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-              '&:hover': { transform: 'translateY(-4px)' },
+              '&:hover': { transform: 'translateY(-4px)', bgcolor: 'white', },
             }}
           >
             Start Your Free Trial
@@ -454,7 +457,7 @@ export default function Home() {
             ))}
           </Stack>
 
-          <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 }}>
+          <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 , color:'white'}}>
             "Best OKR tool we’ve ever used" — 500+ five-star reviews
           </Typography>
         </Container>

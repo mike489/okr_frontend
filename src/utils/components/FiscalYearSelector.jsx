@@ -31,7 +31,7 @@ const FiscalYearSelector = () => {
 
   return (
     <>
-      <GetFiscalYear /> {/* fetch fiscal years once */}
+      <GetFiscalYear /> 
       
       {fiscalYears?.length > 0 &&
         fiscalYears.map((year) => (
