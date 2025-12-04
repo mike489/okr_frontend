@@ -320,7 +320,7 @@ export default function Home() {
 
           <Grid container spacing={5} justifyContent="center">
             {plans.map((plan) => {
-              const isPopular = plan.is_popular === true;
+              const isPopular = plan.name === "Pro";
               const isEnterprise = plan.slug === 'enterprise';
               const price = parseFloat(plan.price);
               const currency = plan.currency || 'ETB';
