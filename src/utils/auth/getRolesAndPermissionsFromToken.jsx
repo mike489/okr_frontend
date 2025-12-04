@@ -20,7 +20,7 @@ export const decodeJWT = (token) => {
       atob(base64)
         .split('')
         .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
-        .join('')
+        .join(''),
     );
 
     return JSON.parse(jsonPayload);
@@ -31,29 +31,60 @@ export const decodeJWT = (token) => {
 };
 
 // Get roles and permissions from token
-export const getRolesAndPermissionsFromToken = (dispatch) => {
-  const token = Storage.getItem('token'); // Retrieve the token
+// export const getRolesAndPermissionsFromToken = (dispatch) => {
+//   const token = Storage.getItem('userRoles'); // Retrieve the token
+//   console.log('first', JSON.parse(token));
 
-  if (!token) {
-    dispatch && dispatch({ type: SIGN_IN, signed: false });
-    Storage.clear();
-    return;
+//   if (!token) {
+//     dispatch && dispatch({ type: SIGN_IN, signed: false });
+//     Storage.clear();
+//     return;
+//   }
+
+//   try {
+//     const decodedToken = decodeJWT(token);
+//     if (!decodedToken) {
+//       console.warn('Failed to decode token');
+//       return [];
+//     }
+//     console.log('first', user);
+//     // const roles = decodedToken.roles || [];
+//     const roles = user.roles;
+
+//     return roles;
+//   } catch (error) {
+//     console.error('Failed to get roles and permissions from token:', error);
+//     return [];
+//   }
+// };
+
+export const getRolesAndPermissionsFromToken = (dispatch) => {
+  const response = Storage.getItem('userRoles'); // This likely contains the entire response object
+  console.log('response', response);
+  // If it's the full response object, extract the roles array
+  if (response && response.data && Array.isArray(response.data.roles)) {
+    return response.data.roles;
   }
 
-  try {
-    const decodedToken = decodeJWT(token);
-    if (!decodedToken) {
-      console.warn('Failed to decode token');
+  // If roles is directly stored as an array
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  if (typeof response === 'string') {
+    try {
+      const parsed = JSON.parse(response);
+      if (parsed && parsed.data && Array.isArray(parsed.data.roles)) {
+        return parsed.data.roles;
+      }
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
       return [];
     }
-
-    const roles = decodedToken.roles || []; // Extract roles
-
-    return roles;
-  } catch (error) {
-    console.error('Failed to get roles and permissions from token:', error);
-    return [];
   }
+
+  // Fallback: return empty array
+  return [];
 };
 
 export default getRolesAndPermissionsFromToken;

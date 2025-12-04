@@ -36,15 +36,15 @@ export const getOrgStructure = () => {
 
   const orderedPermissions = [
     'read:childunit',
-    'read:unit',
-    'read:employee',
+    'read_unit',
+    'read_employee',
     'read:jobposition',
     'read:my_units',
     'read:childemployees',
   ];
 
   const permissionMap = {
-    'read:unit': {
+    'read_unit': {
       id: 'units',
       title: 'Units',
       icon: icons.IconBuildingSkyscraper,
@@ -56,7 +56,7 @@ export const getOrgStructure = () => {
       url: '/my-child-unit',
       icon: icons.IconGitBranch,
     },
-    'read:employee': {
+    'read_employee': {
       id: 'employees',
       title: 'Employees',
       requiredRole: 'Admin',
@@ -70,7 +70,7 @@ export const getOrgStructure = () => {
       icon: icons.IconBuildingSkyscraper,
       url: '/my_units',
     },
-    'read:employee': {
+    'read_employee': {
       id: 'employee',
       title: 'Employee',
       url: '/employees',

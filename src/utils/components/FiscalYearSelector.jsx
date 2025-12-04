@@ -45,7 +45,7 @@ console.log('selectedYearId', selectedYearId);
             }}
             onClick={() => handleYearSelection(year)}
           >
-            <Typography variant="h4">{year.name}</Typography>
+            <Typography variant="h4">{year.year}</Typography>
 
             {selectedYearId === year.id && <IconCircleCheckFilled size={24} style={{ color: theme.palette.primary.main }} />}
           </Box>

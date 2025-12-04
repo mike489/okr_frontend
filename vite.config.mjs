@@ -6,7 +6,6 @@ import jsconfigPaths from 'vite-jsconfig-paths';
 
 export default defineConfig({
   plugins: [react(), jsconfigPaths()],
-
   optimizeDeps: {
     include: ['jwt-decode'],
     exclude: [
@@ -32,10 +31,13 @@ export default defineConfig({
   server: {
     open: false,
     host: true,
-    port: 5000
+    port: 5000,
+    // <--- Add this line
+    allowedHosts: ['sandpapery-unexcreted-donny.ngrok-free.dev', 'localhost', 'backend.wutet.com']
   },
   preview: {
     open: true,
-    port: 5000
+    port: 5000,
+    allowedHosts: ['sandpapery-unexcreted-donny.ngrok-free.dev', 'localhost','backend.wutet.com']
   }
 });

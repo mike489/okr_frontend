@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 // material-ui
 import Box from '@mui/material/Box';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Customization from 'layout/Customization';
 
 // project imports
 import { styled, useTheme } from '@mui/material';

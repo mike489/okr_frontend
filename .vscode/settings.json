@@ -4,5 +4,6 @@
         "Leaderboard",
         "odoo",
         "toastify"
-    ]
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

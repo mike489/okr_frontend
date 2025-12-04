@@ -6,6 +6,9 @@ import MinimalLayout from 'layout/MinimalLayout';
 import ForgotPassword from 'views/authentication/ForgotPassword';
 import ResetPassword from 'views/authentication/ResetPassword';
 import NotFound from 'views/not-found';
+import Home from 'views/landing/Home';
+import TenantRegistrations from 'views/landing/TenantRegistrations';
+
 
 // login option 3 routing
 const AuthLogin = Loadable(lazy(() => import('views/authentication/Login')));
@@ -20,7 +23,7 @@ const AuthenticationRoutes = {
   children: [
     {
       path: '/',
-      element: <AuthLogin />
+      element: <Home />
     },
     {
       path: '/login',
@@ -28,7 +31,7 @@ const AuthenticationRoutes = {
     },
     {
       path: '/register',
-      element: <AuthRegister3 />
+      element: <TenantRegistrations />
     },
     {
       path: '/forgot-password',

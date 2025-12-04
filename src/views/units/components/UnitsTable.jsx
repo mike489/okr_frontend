@@ -77,7 +77,7 @@ const UnitsTable = ({ units, onEdit, onDelete }) => {
                 'Unit Name',
                 'Parent Unit',
                 'Unit Type',
-                'Manager',
+                'Head',
                 'Actions',
               ].map((header) => (
                 <TableCell
@@ -159,10 +159,10 @@ const UnitsTable = ({ units, onEdit, onDelete }) => {
                   />
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="subtitle3" sx={{ flexGrow: 1 }}>
-                      {unit.manager?.user?.name || 'N/A'}
+                      {unit.head.name || 'N/A'}
                     </Typography>
                     <Typography variant="subtitle2">
-                      {unit.manager?.user?.username || 'N/A'}
+                      {unit.head.username || 'N/A'}
                     </Typography>
                   </div>
                 </TableCell>
@@ -176,15 +176,15 @@ const UnitsTable = ({ units, onEdit, onDelete }) => {
                     onOpen={() => handleClick(unit)}
                     onClose={() => handleClose()}
                     onView={
-                      hasPermission('read:unit') ? () => handleView() : null
+                      hasPermission('read_unit') ? () => handleView() : null
                     }
                     onEdit={
-                      hasPermission('update:unit')
+                      hasPermission('update_unit')
                         ? () => handleOpenEditModal()
                         : null
                     }
                     onDelete={
-                      hasPermission('delete:unit') ? () => handleDelete() : null
+                      hasPermission('delete_unit') ? () => handleDelete() : null
                     }
                   />
                 </TableCell>

@@ -17,7 +17,7 @@ const FiscalYearMenu = () => {
   const selectedYear = useSelector(
     (state) => state.customization.selectedFiscalYear,
   );
-
+console.log("Fiscal Years:", years);
   const handleSelection = (event) => {
     dispatch({
       type: SET_SELECTED_FISCAL_YEAR,
@@ -41,7 +41,7 @@ const FiscalYearMenu = () => {
                   variant="body2"
                   sx={{ color: theme.palette.text.primary }}
                 >
-                  {year.name}
+                  {year.year}
                 </Typography>
               </MenuItem>
             ))}

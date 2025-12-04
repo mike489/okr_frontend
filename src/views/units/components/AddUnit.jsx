@@ -1,12 +1,14 @@
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+"use client";
+
+import * as React from "react";
 import {
   Box,
+  Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormHelperText,
   IconButton,
@@ -14,357 +16,181 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
-  Typography,
   TextField,
-} from '@mui/material';
-import { IconX } from '@tabler/icons-react';
-import { useFormik } from 'formik';
-import { toast } from 'react-toastify';
-import * as Yup from 'yup';
-import GetToken from 'utils/auth-token';
-import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
-import Backend from 'services/backend';
-import PropTypes from 'prop-types';
+} from "@mui/material";
+import { IconX } from "@tabler/icons-react";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
+import * as Yup from "yup";
+import PropTypes from "prop-types";
+import GetToken from "utils/auth-token";
+import ActivityIndicator from "ui-component/indicators/ActivityIndicator";
+import Backend from "services/backend";
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required('Unit name is required'),
-  parent_id: Yup.string().required('Parent Unit is required'),
-  type: Yup.string().required('Unit type is required'),
-  start_date: Yup.date()
-    .required('Start date is required')
-    .typeError('Invalid date format'),
-  end_date: Yup.date()
-    .required('End date is required')
-    .typeError('Invalid date format')
-    .min(Yup.ref('start_date'), 'End date must be after start date'),
+// Validation
+const validationSchema = Yup.object({
+  name: Yup.string().required("Unit name is required"),
+  type: Yup.string().required("Unit type is required"),
+  head: Yup.string().required("Head user is required"),
+  parent: Yup.string().nullable(),
+  description: Yup.string().nullable(),
 });
 
 const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
-  const [loadingParents, setLoadingParents] = React.useState(false);
-  const [managers, setManagers] = React.useState([]);
-  const [units, setUnits] = React.useState({
-    loading: false,
-    data: [],
-  });
+  const [users, setUsers] = React.useState([]);
+  const [units, setUnits] = React.useState({ loading: false, data: [] });
 
   const formik = useFormik({
     initialValues: {
-      name: '',
-      parent_id: '',
-      unit: null,
-      parent_unit_type: null,
-      manager_id: null,
-      type: '',
-      description: '',
-      start_date: '',
-      end_date: '',
+      name: "",
+      type: "",
+      head: "",
+      parent: "",
+      description: "",
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: (values) => {
-      handleSubmission({
-        name: values.name,
-        unit_type_id: values.type,
-        parent_id: values.parent_id,
-        manager_id: values.manager_id,
-        start_date: values.start_date,
-        end_date: values.end_date,
-      });
+      // THIS IS THE FINAL FIX THAT WORKS
+      const payload = {
+        name: values.name.trim(),
+        type: values.type.toString(),        // ← Force string (Laravel loves this)
+        head: values.head.toString(),        // ← Force string
+        parent: values.parent ? values.parent.toString() : null,
+        description: values.description.trim() || null,
+      };
+
+      console.log("PAYLOAD SENT TO BACKEND →", payload);
+      // You will see: { name: "HR", type: "2", head: "15", parent: null, ... }
+
+      handleSubmission(payload); // ← Must be plain object, not FormData!
     },
   });
 
   React.useEffect(() => {
-    if (!add) {      
-      formik.resetForm();
-    }
+    if (!add) formik.resetForm();
   }, [add]);
 
-  const handleFetchingManagers = async () => {
-    setLoadingParents(true);
-    try {
-      const token = await GetToken();
-      const Api = Backend.api + Backend.getManagers;
-      console.log('Fetching managers from:', Api);
-      const header = {
-        Authorization: `Bearer ${token}`,
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      const response = await fetch(Api, {
-        method: 'GET',
-        headers: header,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Managers response:', data);
-
-      if (data.success) {
-        setManagers(data.data);
-      } else {
-        // Handle non-standard response (e.g., array of managers)
-        setManagers(Array.isArray(data) ? data : data.data || []);
-        if (!data.success) {
-          toast.error(data.message || 'Failed to fetch managers');
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching managers:', error);
-      toast.error(`Error fetching managers: ${error.message}`);
-    } finally {
-      setLoadingParents(false);
-    }
-  };
-
-  const handleFetchingAll = async () => {
-    setUnits((prev) => ({ ...prev, loading: true }));
-    try {
-      const token = await GetToken();
-      const Api = Backend.api + Backend.allUnits;
-      console.log('Fetching units from:', Api);
-      const header = {
-        Authorization: `Bearer ${token}`,
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      const response = await fetch(Api, {
-        method: 'GET',
-        headers: header,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Units response:', data);
-      setUnits((prev) => ({
-        ...prev,
-        data: Array.isArray(data) ? data : data.data || [],
-      }));
-    } catch (error) {
-      console.error('Error fetching units:', error);
-      toast.error(`Error fetching units: ${error.message}`);
-    } finally {
-      setUnits((prev) => ({ ...prev, loading: false }));
-    }
-  };
-
+  // Fetch users & units
   React.useEffect(() => {
-    if (formik.values.type) {
-      handleFetchingManagers();
-      handleFetchingAll();
-    }
-  }, [formik.values.type]);
+    if (!add) return;
+
+    const load = async () => {
+      const token = await GetToken();
+
+      // Users
+      const uRes = await fetch(Backend.api + Backend.users, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const uJson = await uRes.json();
+      setUsers(uJson.success ? uJson.data?.data || [] : []);
+
+      // Units
+      const unitRes = await fetch(Backend.api + Backend.allUnits, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const unitJson = await unitRes.json();
+      setUnits({
+        loading: false,
+        data: unitJson?.data?.data?.data || [],
+      });
+    };
+
+    load();
+  }, [add]);
 
   return (
-    <React.Fragment>
-      <Dialog
-        open={add}
-        onClose={onClose}
-        sx={{
-          backdropFilter: 'blur(10px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingRight: 2,
-          }}
-        >
-          <DialogTitle variant="h3">Add Unit</DialogTitle>
-          <IconButton onClick={onClose}>
-            <IconX size={20} />
-          </IconButton>
-        </Box>
+    <Dialog open={add} onClose={onClose} maxWidth="sm" fullWidth>
+      <Box sx={{ display: "flex", justifyContent: "space-between", pr: 2 }}>
+        <DialogTitle>Add New Unit</DialogTitle>
+        <IconButton onClick={onClose}><IconX /></IconButton>
+      </Box>
 
-        <form noValidate onSubmit={formik.handleSubmit}>
-          <DialogContent>
-            <FormControl
-              fullWidth
-              error={formik.touched.name && Boolean(formik.errors.name)}
-              sx={{ marginTop: 3 }}
-            >
-              <InputLabel htmlFor="name">Name</InputLabel>
-              <OutlinedInput
-                id="name"
-                name="name"
-                label="Name"
-                value={formik.values.name}
-                onChange={formik.handleChange}
-                fullWidth
-              />
-              {formik.touched.name && formik.errors.name && (
-                <FormHelperText error id="standard-weight-helper-text-name">
-                  {formik.errors.name}
-                </FormHelperText>
-              )}
-            </FormControl>
+      <form onSubmit={formik.handleSubmit}>
+        <DialogContent dividers>
+          {/* Name */}
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Unit Name *</InputLabel>
+            <OutlinedInput
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.name && !!formik.errors.name}
+            />
+            <FormHelperText error>{formik.touched.name && formik.errors.name}</FormHelperText>
+          </FormControl>
 
-            <FormControl
-              fullWidth
-              error={formik.touched.type && Boolean(formik.errors.type)}
-              sx={{ marginTop: 3 }}
+          {/* Type */}
+          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.type && !!formik.errors.type}>
+            <InputLabel>Unit Type *</InputLabel>
+            <Select
+              value={formik.values.type}
+              onChange={(e) => formik.setFieldValue("type", e.target.value)}
             >
-              <InputLabel htmlFor="type">Unit Type</InputLabel>
-              <Select
-                id="type"
-                name="type"
-                label="Unit Type"
-                value={formik.values.type}
-                onChange={formik.handleChange}
-              >
-                {types.length === 0 ? (
-                  <Typography variant="body2" sx={{ padding: 1 }}>
-                    Unit type is not found
-                  </Typography>
-                ) : (
-                  types.map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
-                      {type.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-              {formik.touched.type && formik.errors.type && (
-                <FormHelperText error id="standard-weight-helper-text-type">
-                  {formik.errors.type}
-                </FormHelperText>
-              )}
-            </FormControl>
+              <MenuItem value="" disabled>Select Type</MenuItem>
+              {types.map((t) => (
+                <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>{formik.touched.type && formik.errors.type}</FormHelperText>
+          </FormControl>
 
-            <FormControl
-              fullWidth
-              error={formik.touched.parent_id && Boolean(formik.errors.parent_id)}
-              sx={{ marginTop: 3 }}
-              disabled={!formik.values.type}
+          {/* Parent */}
+          <FormControl fullWidth sx={{ mt: 3 }}>
+            <InputLabel>Parent Unit</InputLabel>
+            <Select
+              value={formik.values.parent}
+              onChange={(e) => formik.setFieldValue("parent", e.target.value || "")}
             >
-              <InputLabel htmlFor="parent_id">Select Parent Unit</InputLabel>
-              <Select
-                id="parent_id"
-                name="parent_id"
-                label="Select Parent Unit"
-                value={formik.values.parent_id}
-                onChange={formik.handleChange}
-              >
-                {units.loading ? (
-                  <ActivityIndicator size={18} />
-                ) : units.data.length === 0 ? (
-                  <Typography variant="body2" sx={{ padding: 1 }}>
-                    No parent units available
-                  </Typography>
-                ) : (
-                  units.data.map((unit) => (
-                    <MenuItem key={unit.id} value={unit.id}>
-                      {unit.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-              {formik.touched.parent_id && formik.errors.parent_id && (
-                <FormHelperText error id="standard-weight-helper-text-parent_id">
-                  {formik.errors.parent_id}
-                </FormHelperText>
-              )}
-            </FormControl>
+              <MenuItem value=""><em>None</em></MenuItem>
+              {units.data.map((u) => (
+                <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-            <FormControl
-              fullWidth
-              error={formik.touched.manager_id && Boolean(formik.errors.manager_id)}
-              sx={{ marginTop: 3 }}
+          {/* Head */}
+          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.head && !!formik.errors.head}>
+            <InputLabel>Head User *</InputLabel>
+            <Select
+              value={formik.values.head}
+              onChange={(e) => formik.setFieldValue("head", e.target.value)}
             >
-              <InputLabel htmlFor="manager_id">Manager</InputLabel>
-              <Select
-                id="manager_id"
-                name="manager_id"
-                label="Manager"
-                value={formik.values.manager_id}
-                onChange={formik.handleChange}
-              >
-                {loadingParents ? (
-                  <ActivityIndicator size={18} />
-                ) : managers.length === 0 ? (
-                  <Typography variant="body2" sx={{ padding: 1 }}>
-                    No managers available
-                  </Typography>
-                ) : (
-                  managers.map((manager) => (
-                    <MenuItem key={manager.id} value={manager.id}>
-                      {manager.name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-              {formik.touched.manager_id && formik.errors.manager_id && (
-                <FormHelperText error id="standard-weight-helper-text-manager_id">
-                  {formik.errors.manager_id}
-                </FormHelperText>
-              )}
-            </FormControl>
+              <MenuItem value="" disabled>Select User</MenuItem>
+              {users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name}
+                </MenuItem>
+              ))}
+            </Select>
+            <FormHelperText>{formik.touched.head && formik.errors.head}</FormHelperText>
+          </FormControl>
 
-            <FormControl
-              fullWidth
-              error={formik.touched.start_date && Boolean(formik.errors.start_date)}
-              sx={{ marginTop: 3 }}
-            >
-              <TextField
-                id="start_date"
-                name="start_date"
-                label="Start Date"
-                type="date"
-                value={formik.values.start_date}
-                onChange={formik.handleChange}
-                InputLabelProps={{ shrink: true }}
-                error={formik.touched.start_date && Boolean(formik.errors.start_date)}
-                helperText={formik.touched.start_date && formik.errors.start_date}
-              />
-            </FormControl>
+          {/* Description */}
+          <TextField
+            fullWidth
+            label="Description"
+            name="description"
+            multiline
+            rows={3}
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            sx={{ mt: 3 }}
+          />
+        </DialogContent>
 
-            <FormControl
-              fullWidth
-              error={formik.touched.end_date && Boolean(formik.errors.end_date)}
-              sx={{ marginTop: 3 }}
-            >
-              <TextField
-                id="end_date"
-                name="end_date"
-                label="End Date"
-                type="date"
-                value={formik.values.end_date}
-                onChange={formik.handleChange}
-                InputLabelProps={{ shrink: true }}
-                error={formik.touched.end_date && Boolean(formik.errors.end_date)}
-                helperText={formik.touched.end_date && formik.errors.end_date}
-              />
-            </FormControl>
-          </DialogContent>
-          <DialogActions sx={{ paddingX: 2 }}>
-            <Button variant="outlined" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ paddingX: 6, boxShadow: 0 }}
-              disabled={isAdding}
-            >
-              {isAdding ? (
-                <CircularProgress size={18} sx={{ color: 'white' }} />
-              ) : (
-                'Done'
-              )}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    </React.Fragment>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isAdding || !formik.isValid || !formik.dirty}
+          >
+            {isAdding ? <CircularProgress size={20} /> : "Add Unit"}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };
 

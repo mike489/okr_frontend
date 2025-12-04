@@ -1,12 +1,12 @@
 import React from 'react';
-import iconLogo from 'assets/images/logoTracker.png'; // Make sure path is correct
+import iconLogo from 'assets/images/logo-icon.svg'; 
 
 const Logo = () => {
   return (
     <img
       src={iconLogo}
       alt="Activity Tracker Logo"
-      style={{ width: '120px', height: 'auto' }}
+      style={{ width: '80px', height: '60px' }}
     />
   );
 };
@@ -16,7 +16,7 @@ export const IconLogo = () => {
     <img
       src={iconLogo}
       alt="Small Logo"
-      style={{ width: '40px', height: 'auto' }}
+      style={{ width: '40px', height: '40px' }}
     />
   );
 };

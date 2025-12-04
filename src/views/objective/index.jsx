@@ -80,7 +80,7 @@ const Objective = () => {
       const responseData = await response.json();
 
       if (responseData.success) {
-        setData(responseData.data);
+        setData(responseData.data.data);
         setPagination({
           ...pagination,
           last_page: responseData.data.last_page,
@@ -269,13 +269,19 @@ const Objective = () => {
                     borderRadius: 2,
                   }}
                 >
-                  <Table aria-label="Objective table" sx={{ minWidth: 650 }}>
+                  <Table aria-label="Objective table" sx={{ minWidth: 900 }}>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Objective Title</TableCell>
+                        <TableCell>Title</TableCell>
+                        <TableCell>Description</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Visibility</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Created At</TableCell>
                         <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
+
                     <TableBody>
                       {data.map((item) => (
                         <TableRow
@@ -287,15 +293,29 @@ const Objective = () => {
                           }}
                         >
                           <TableCell>{item.title}</TableCell>
+                          <TableCell
+                            sx={{ maxWidth: 300, whiteSpace: 'normal' }}
+                          >
+                            {item.description}
+                          </TableCell>
+                          <TableCell>{item.type}</TableCell>
+                          <TableCell>{item.visibility}</TableCell>
+                          <TableCell sx={{ textTransform: 'capitalize' }}>
+                            {item.status}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(item.created_at).toLocaleDateString()}
+                          </TableCell>
+
                           <TableCell>
                             <DotMenu
                               onEdit={
-                                hasPermission('update:objective')
+                                hasPermission('update_objective')
                                   ? () => handleEditClick(item)
                                   : null
                               }
                               onDelete={
-                                hasPermission('delete:objective')
+                                hasPermission('delete_objective')
                                   ? () => handleObjectiveDelete(item)
                                   : null
                               }
@@ -305,6 +325,7 @@ const Objective = () => {
                       ))}
                     </TableBody>
                   </Table>
+
                   {pagination.total > 0 && (
                     <TablePagination
                       component="div"

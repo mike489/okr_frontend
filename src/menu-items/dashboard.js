@@ -77,20 +77,20 @@ export const dashboard = () => {
     'read:task_status',
     'read:task',
     'read:myteams',
-    'read:mainactivity',
+    'read_key_result',
     // 'read:pendingtask',
     // 'read:monitoring',
     'read:evaluation',
     'read:feedback',
     'read:measuringunit',
-    // 'read:mainactivity',
+    // 'read_key_result',
     'read:myfeedbacks',
     'read:performance',
     'read:planreport',
     'read:monitoringReport',
     'read:deletelog',
     // 'read:childunit',
-    // 'read:objective',
+    'read_objective',
     // 'read:initiative',
     // 'read:employee',
     'read:monitoring',
@@ -108,7 +108,7 @@ export const dashboard = () => {
       icon: icons.IconKey,
     },
 
-    'read:objective': {
+    'read_objective': {
       id: 'objective',
       title: 'Objective',
       url: '/objective',
@@ -128,10 +128,10 @@ export const dashboard = () => {
       url: '/measuring-units',
       icon: icons.IconRulerMeasure,
     },
-    'read:mainactivity': {
-      id: 'mainactivities',
-      title: 'Main Activity',
-      url: '/main-activities',
+    'read_key_result': {
+      id: 'key-result',
+      title: 'Key Result',
+      url: '/key-result',
       icon: icons.IconList,
     },
     'read:task-status': {

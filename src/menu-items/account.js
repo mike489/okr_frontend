@@ -18,21 +18,21 @@ export const Accounts = () => {
   const addedPermissions = new Set();
 
   const orderedPermissions = [
-    'read:roles',
-    'read:permissions',
-    'read:users',
+    'read_role',
+    'read_permission',
+    'read_user',
     'read:employees_plan_remove',
     
   ];
 
   const permissionMap = {
-    'read:roles': {
+    'read_role': {
       id: 'role',
       title: 'Role and Permission',
       icon: icons.IconKey,
       url: '/role-permission',
     },
-    'read:permissions': {
+    'read_permission': {
       id: 'role',
       title: 'Role and Permission',
       icon: icons.IconKey,

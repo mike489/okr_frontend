@@ -89,7 +89,7 @@ const Units = () => {
       const response = await fetch(Api, { method: 'GET', headers: header });
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      setUnitType(data.success ? data.data : Array.isArray(data) ? data : []);
+      setUnitType(data.success ? data.data.data : Array.isArray(data.data) ? data.data : []);
       setUnitLoading(false);
     } catch (error) {
       toast.error(`Error fetching unit types: ${error.message}`);
@@ -122,7 +122,7 @@ const Units = () => {
   const handleAddUnitClick = () => {
     setAdd(true);
     handleFetchingTypes();
-    handleFetchingManagers();
+    // handleFetchingManagers();
   };
 
   const handleUnitModalClose = () => {
@@ -141,11 +141,10 @@ const Units = () => {
       };
       const data = {
         name: value.name,
-        unit_type_id: value.unit_type_id,
-        parent_id: value.parent_id,
-        manager_id: value.manager_id,
-        start_date: value.start_date,
-        end_date: value.end_date,
+        type: value.type,
+        parent: value.parent,
+        head: value.head,
+        description: value.description,
       };
 
       const response = await fetch(Api, {
@@ -180,12 +179,10 @@ const Units = () => {
       };
       const data = {
         name: values.name,
-        unit_type_id: values.my_unit_type,
-        parent_unit_type_id: values.type,
-        parent_id: values.parent_id,
-        manager_id: values.manager_id,
-        start_date: values.start_date,
-        end_date: values.end_date,
+        type: values.type,
+        parent: values.parent,
+        head: values.head,
+        description: values.description,
       };
 
       const response = await fetch(Api, {
@@ -316,11 +313,11 @@ const Units = () => {
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       if (data.success) {
-        setData(data.data.data);
+        setData(data.data.data.data);
         setPagination({
           ...pagination,
-          last_page: data.data.last_page,
-          total: data.data.total,
+          last_page: data.data.data.last_page,
+          total: data.data.data.total,
         });
         setError(false);
       } else {
@@ -393,7 +390,7 @@ const Units = () => {
 
   useEffect(() => {
     handleFetchingTypes();
-    handleFetchingManagers();
+    // handleFetchingManagers();
   }, []);
 
   return (
@@ -410,7 +407,7 @@ const Units = () => {
       }
       rightOption={
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          {hasPermission('create:unit') && (
+          {hasPermission('create_unit') && (
             <SplitButton
               options={AddUnitOptions}
               handleSelection={handleUnitAdd}
@@ -463,7 +460,7 @@ const Units = () => {
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
                   Unit Types
                 </Typography>
-                {hasPermission('create:unit') && (
+                {hasPermission('create_unit_type') && (
                   <AddUnitType
                     isAdding={isAdding}
                     handleSubmission={handleTypeAddition}
@@ -505,8 +502,8 @@ const Units = () => {
                         orientation="vertical"
                         onOpen={() => handleClick(type)}
                         onClose={handleClose}
-                        onEdit={hasPermission('update:unit') ? () => handleEditUnitType(selectedUnitType) : null}
-                        onDelete={hasPermission('delete:unit') ? () => handleDelete(selectedUnitType.id, 'type') : null}
+                        onEdit={hasPermission('update_unit_type') ? () => handleEditUnitType(selectedUnitType) : null}
+                        onDelete={hasPermission('delete_unit_type') ? () => handleDelete(selectedUnitType.id, 'type') : null}
                       />
                     </Box>
                   ))

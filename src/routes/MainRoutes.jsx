@@ -15,6 +15,9 @@ const PendingTasks = Loadable(lazy(() => import('views/todo/pending-tasks')));
 const UnitPlan = Loadable(lazy(() => import('views/my-child-unit/UnitPlan')));
 const ViewUnit = Loadable(lazy(() => import('views/units/view')));
 const Planning = Loadable(lazy(() => import('views/plan')));
+const KeyResult = Loadable(lazy(() => import('views/key_results')));
+
+
 const PlanDetail = Loadable(lazy(() => import('views/plan/planDetail')));
 const FeedBacks = Loadable(lazy(() => import('views/feedbacks')));
 const Objectives = Loadable(lazy(() => import('views/objective')));
@@ -237,10 +240,10 @@ const MainRoutes = {
     },
 
     {
-      path: 'main-activity',
+      path: 'key-result',
       element: (
         <Protected>
-          <Planning />
+          <KeyResult  />
         </Protected>
       ),
     },
