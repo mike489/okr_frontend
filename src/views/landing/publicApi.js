@@ -18,7 +18,7 @@ export async function fetchPricingPlans() {
 }
 
 export async function registerTenant(payload) {
-  const url = buildUrl('/tenants');
+  const url ='https://backend.wutet.com/api/central/tenants';
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -43,7 +43,7 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const res = await fetch(buildUrl(`/tenant-deployment-status/${tenantDomain}`), {
+      const res = await fetch(`https://backend.wutet.com/api/central/tenant-deployment-status/${tenantDomain}`, {
         headers: { Accept: 'application/json' },
       });
 
