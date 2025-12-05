@@ -26,6 +26,7 @@ import {
 export default function PublicLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
+  const tenant = localStorage.getItem('current_tenant') || window.localStorage.getItem("current_tenant") ;
 
   const navItems = [
     { label: 'Features', href: '#features' },
@@ -40,57 +41,68 @@ export default function PublicLayout({ children }) {
       bgcolor="background.paper"
     >
       {/* HEADER */}
-        <AppBar
-          position="fixed"
-          color="default"
-          elevation={0}
-          sx={{
-            bgcolor: 'rgba(255,255,255,0.85)',
-            backdropFilter: 'blur(20px)',
-          }}
-        >
-          <Toolbar sx={{ py: 2 }}>
-            <Container maxWidth="xl">
+      <AppBar
+        position="fixed"
+        color="default"
+        elevation={0}
+        sx={{
+          bgcolor: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+        }}
+      >
+        <Toolbar sx={{ py: 2 }}>
+          <Container maxWidth="xl">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              {/* Logo */}
+              <Typography
+                variant="h5"
+                fontWeight={900}
+                sx={{
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                OKRMaster
+              </Typography>
+
+              {/* Desktop Nav */}
               <Stack
                 direction="row"
-                justifyContent="space-between"
-                alignItems="center"
+                spacing={5}
+                sx={{
+                  display: {
+                    xs: 'none',
+                    lg: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-evenly',
+                  },
+                }}
               >
-                {/* Logo */}
-                <Typography
-                  variant="h5"
-                  fontWeight={900}
-                  sx={{
-                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  OKRMaster
-                </Typography>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    underline="none"
+                    sx={{
+                      fontWeight: 600,
+                      '&:hover': { color: 'primary.main' },
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Box sx={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:4}}>
+                  {tenant && (
+                    <Button variant="outlined" href="/login">
+                      Sign In
+                    </Button>
+                  )}
 
-                {/* Desktop Nav */}
-                <Stack
-                  direction="row"
-                  spacing={5}
-                  sx={{ display: { xs: 'none', lg: 'flex', alignItems:'center' } }}
-                >
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      underline="none"
-                      sx={{
-                        fontWeight: 600,
-                        '&:hover': { color: 'primary.main' },
-                      }}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <Button variant="outlined" href="/login">
-                    Sign In
-                  </Button>
                   <Button
                     variant="contained"
                     href="/register"
@@ -98,52 +110,55 @@ export default function PublicLayout({ children }) {
                   >
                     Register
                   </Button>
-                </Stack>
-
-                {/* Mobile */}
-                <IconButton
-                  onClick={() => setMobileOpen(!mobileOpen)}
-                  sx={{ display: { lg: 'none' } }}
-                >
-                  {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-                </IconButton>
+                </Box>
               </Stack>
-            </Container>
-          </Toolbar>
 
-          {/* Mobile Menu */}
-          {mobileOpen && (
-            <Box
-              sx={{
-                display: { xs: 'block', lg: 'none' },
-                bgcolor: 'background.paper',
-                pb: 3,
-              }}
-            >
-              <Container>
-                <Stack spacing={3} mt={3}>
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      underline="none"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <Button fullWidth variant="outlined" href="/login">
+              {/* Mobile */}
+              <IconButton
+                onClick={() => setMobileOpen(!mobileOpen)}
+                sx={{ display: { lg: 'none' } }}
+              >
+                {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+              </IconButton>
+            </Stack>
+          </Container>
+        </Toolbar>
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <Box
+            sx={{
+              display: { xs: 'block', lg: 'none' },
+              bgcolor: 'background.paper',
+              pb: 3,
+            }}
+          >
+            <Container>
+              <Stack spacing={3} mt={3}>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    underline="none"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                {tenant && (
+                  <Button variant="outlined" href="/login">
                     Sign In
                   </Button>
-                  <Button fullWidth variant="contained" href="/register">
-                    Start Free Trial
-                  </Button>
-                </Stack>
-              </Container>
-            </Box>
-          )}
-        </AppBar>
+                )}
 
+                <Button fullWidth variant="contained" href="/register">
+                  Start Free Trial
+                </Button>
+              </Stack>
+            </Container>
+          </Box>
+        )}
+      </AppBar>
 
       {/* MAIN */}
       <Box flexGrow={1}>{children}</Box>
@@ -201,7 +216,12 @@ export default function PublicLayout({ children }) {
 
           <Divider sx={{ my: 6, borderColor: 'rgba(255,255,255,0.1)' }} />
 
-          <Typography variant="body2" align="center" sx={{ opacity: 0.6 }} color="#fff">
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{ opacity: 0.6 }}
+            color="#fff"
+          >
             © {new Date().getFullYear()} OKRMaster. All Rights Reserved.
           </Typography>
         </Container>

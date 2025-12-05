@@ -60,7 +60,7 @@ export const decodeJWT = (token) => {
 
 export const getRolesAndPermissionsFromToken = (dispatch) => {
   const response = Storage.getItem('userRoles'); // This likely contains the entire response object
-  console.log('response', response);
+  // console.log('response', response);
   // If it's the full response object, extract the roles array
   if (response && response.data && Array.isArray(response.data.roles)) {
     return response.data.roles;

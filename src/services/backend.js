@@ -73,6 +73,7 @@ const Backend = {
   planInitiative: 'update-initiative/',
 
   /** Tasks & Monitoring */
+  fiscalYears: "fiscal-years",
   tasks: 'tasks',
   createTask: 'create-task',
   approveTask: 'approve-task',

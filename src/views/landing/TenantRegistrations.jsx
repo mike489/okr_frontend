@@ -133,7 +133,7 @@ export default function TenantRegistration() {
       // Success
       toast.success('Your workspace is ready! Redirecting...');
       setTimeout(() => {
-        window.location.href = `https://www.${tenant}.wutet.com`;
+        window.location.href = `https://${tenant}.wutet.com/login`;
       }, 2500);
     } catch (error) {
       toast.error(error.message || 'Failed to create workspace');
@@ -530,8 +530,8 @@ export default function TenantRegistration() {
                                 fontWeight={900}
                                 color="#4c6ef5"
                               >
-                                {plan.currency}
-                                {plan.price}
+                                {plan.currency}   
+                                    {plan.price}
                                 <Typography component="span" variant="body1">
                                   /month
                                 </Typography>
@@ -566,7 +566,7 @@ export default function TenantRegistration() {
                           '&:hover': { bgcolor: '#3b5bdb' },
                         }}
                       >
-                        {loadingPlans ? 'Loading Plans...' : 'Create Workspace'}
+                        {loadingPlans ? <CircularProgress/> : 'Create Workspace'}
                       </Button>
                     </Grid>
                   </Grid>

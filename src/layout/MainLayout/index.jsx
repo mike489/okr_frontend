@@ -90,7 +90,7 @@ const MainLayout = () => {
           }}
         >
           <Header handleLeftDrawerToggle={handleLeftDrawerToggle} drawerOpen={leftDrawerOpened} />
-          {!isSuperAdmin && <GetFiscalYear />}
+           <GetFiscalYear />
         </Box>
 
         <Outlet />

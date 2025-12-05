@@ -93,7 +93,7 @@ const MenuList = () => {
             {item.badge && (
               <Badge
                 color="error"
-                badgeContent={item.badge.count}
+                badgeContent={item.badge.count} 
                 sx={{ mr: 2 }}
               />
             )}

@@ -69,7 +69,7 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
         onProgress({ message: 'All done! Redirecting...', progress: 100 });
         return {
           success: true,
-          frontendUrl: data.frontendUrl || `https://www.${tenantDomain}.wutet.com`,
+          frontendUrl: data.frontendUrl || `https://${tenantDomain}.wutet.com/login`,
         };
       }
 

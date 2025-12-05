@@ -12,6 +12,7 @@ import {
   alpha,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from '@mui/material';
 import {
   AutoAwesome,
@@ -317,10 +318,10 @@ export default function Home() {
           <Typography variant="h6" color="text.secondary" textAlign="center" mb={10} maxWidth={700} mx="auto">
             Choose the plan that fits your team. All plans include a <strong>7-day free trial</strong> — no credit card required.
           </Typography>
-
+{plans.length >0?(
           <Grid container spacing={5} justifyContent="center">
             {plans.map((plan) => {
-              const isPopular = plan.slug === "pro";
+              const isPopular = plan.is_popular === true;
               const isEnterprise = plan.slug === 'enterprise';
               const price = parseFloat(plan.price);
               const currency = plan.currency || 'ETB';
@@ -366,7 +367,7 @@ export default function Home() {
                         ) : (
                           <>
                             <Typography variant="h1" fontWeight={900} component="span">
-                              {currency === 'ETB' ? 'Br' : '$'}{price.toLocaleString()}
+                              {plan.currency} {price.toLocaleString()}
                             </Typography>
                             <Typography component="span" variant="h5" color="text.secondary"> /month</Typography>
                           </>
@@ -405,6 +406,12 @@ export default function Home() {
               );
             })}
           </Grid>
+
+):(
+  <Box sx={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+    <CircularProgress/>
+  </Box>
+)}
 
           <Box textAlign="center" mt={10}>
             <Typography variant="body1" color="text.secondary">
