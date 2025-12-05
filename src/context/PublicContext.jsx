@@ -26,7 +26,20 @@ import {
 export default function PublicLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
-  const tenant = localStorage.getItem('current_tenant') || window.localStorage.getItem("current_tenant") ;
+ let tenant =
+  localStorage.getItem("current_tenant") ||
+  window.localStorage.getItem("current_tenant");
+
+
+if (!tenant) {
+  const hostname = window.location.hostname; // e.g. adan.bet.com
+  const parts = hostname.split(".");
+
+  // Only extract subdomain if at least 3 parts exist
+  if (parts.length >= 3) {
+    tenant = parts[0]; // first part = subdomain
+  }
+}
 
   const navItems = [
     { label: 'Features', href: '#features' },
