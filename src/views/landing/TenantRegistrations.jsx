@@ -531,7 +531,7 @@ export default function TenantRegistration() {
                                 color="#4c6ef5"
                               >
                                 {plan.currency}   
-                                    {plan.price}
+                                   <span style={{marginLeft:2}}> {plan.price}</span> 
                                 <Typography component="span" variant="body1">
                                   /month
                                 </Typography>
