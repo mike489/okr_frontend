@@ -14,6 +14,7 @@ const AuthLogin = Loadable(lazy(() => import('views/authentication/Login')));
 // ==============================|| TENANT CHECK ||============================== //
 
 let tenant = localStorage.getItem("current_tenant");
+console.log("Tenant:", tenant)
 
 if (!tenant) {
   const parts = window.location.hostname.split(".");
@@ -31,18 +32,19 @@ const AuthenticationRoutes = {
       ? [
           {
             path: '',          
-            element: <Home />
-          }
-        ]
-      : [
-          {
-            path: '',          
             element: <AuthLogin />
           },
           {
             path: 'login',
             element: <AuthLogin />
           }
+        ]
+      : [
+         {
+            path: '',          
+            element: <Home />
+          }
+          
         ]
     ),
 
