@@ -1,6 +1,5 @@
 import { lazy } from 'react';
 
-// project imports
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import ForgotPassword from 'views/authentication/ForgotPassword';
@@ -9,40 +8,61 @@ import NotFound from 'views/not-found';
 import Home from 'views/landing/Home';
 import TenantRegistrations from 'views/landing/TenantRegistrations';
 
-
-// login option 3 routing
+// lazy components
 const AuthLogin = Loadable(lazy(() => import('views/authentication/Login')));
-const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication3/Login3')));
-const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication3/Register3')));
 
-// ==============================|| AUTHENTICATION ROUTING ||============================== //
+// ==============================|| TENANT CHECK ||============================== //
+
+let tenant = localStorage.getItem("current_tenant");
+
+if (!tenant) {
+  const parts = window.location.hostname.split(".");
+  if (parts.length >= 3) tenant = parts[0]; 
+}
+
+// ==============================|| ROUTES ||============================== //
 
 const AuthenticationRoutes = {
   path: '/',
   element: <MinimalLayout />,
   children: [
+
+    ...(tenant
+      ? [
+          {
+            path: '',          
+            element: <Home />
+          }
+        ]
+      : [
+          {
+            path: '',          
+            element: <AuthLogin />
+          },
+          {
+            path: 'login',
+            element: <AuthLogin />
+          }
+        ]
+    ),
+
+    // -------------------------------------------------------
+    // STATIC ROUTES
+    // -------------------------------------------------------
     {
-      path: '/',
-      element: <Home />
-    },
-    {
-      path: '/login',
-      element: <AuthLogin />
-    },
-    {
-      path: '/register',
+      path: 'register',
       element: <TenantRegistrations />
     },
     {
-      path: '/forgot-password',
+      path: 'forgot-password',
       element: <ForgotPassword />
     },
     {
-      path: '/reset-password',
+      path: 'reset-password',
       element: <ResetPassword />
     },
     {
-      path: '/*',
+      path: '*',
       element: <NotFound />
     }
   ]
