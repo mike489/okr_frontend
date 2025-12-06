@@ -1,13 +1,25 @@
-
 import React from 'react';
 import { Box, Typography, CircularProgress, LinearProgress } from '@mui/material';
 import { CloudQueue, CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
 
-export default function DeployingWorkspace({ tenant, status, progress = 0 }) {
-  const isCompleted = status?.rawStatus === 'deployed' || 
-                     status?.rawStatus === 'completed' || 
-                     status?.rawStatus === 'ready';
+export default function DeployingWorkspace({ tenant, status }) {
+  const deploymentSteps = [
+    'database_created',
+    'database_migrating',
+    'database_migrated',
+    'database_seeding',
+    'database_seeded',
+    'domain_created',
+    'deployed',
+  ];
 
+  const stepIndex = deploymentSteps.indexOf(status?.rawStatus);
+  const progress =
+    stepIndex >= 0
+      ? Math.round((stepIndex / (deploymentSteps.length - 1)) * 100)
+      : 0;
+
+  const isCompleted = status?.rawStatus === 'deployed';
   const hasError = !!status?.error;
 
   return (
@@ -36,7 +48,7 @@ export default function DeployingWorkspace({ tenant, status, progress = 0 }) {
         <Box sx={{ width: '100%', mb: 4 }}>
           <LinearProgress
             variant="determinate"
-            value={Math.min(progress || 0, 100)}
+            value={Math.min(progress, 100)}
             sx={{
               height: 14,
               borderRadius: 7,
@@ -45,7 +57,7 @@ export default function DeployingWorkspace({ tenant, status, progress = 0 }) {
             }}
           />
           <Typography variant="body1" mt={2} fontWeight="bold">
-            {Math.round(progress || 0)}% Complete
+            {progress}% Complete
           </Typography>
         </Box>
 

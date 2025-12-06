@@ -16,9 +16,8 @@ export async function fetchPricingPlans() {
   const json = await res.json();
   return json?.data ?? [];
 }
-
 export async function registerTenant(payload) {
-  const url ='https://backend.wutet.com/api/central/tenants';
+  const url = 'https://backend.wutet.com/api/central/tenants';
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -28,29 +27,32 @@ export async function registerTenant(payload) {
     body: JSON.stringify(payload),
   });
 
+  const json = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || err.data?.message || 'Failed to register tenant');
+    // Throw the full backend response
+    throw json;
   }
 
-  return res.json();
+  return json;
 }
+
 
 // ONLY ONE VERSION — CLEAN & FINAL
 export async function waitForTenantDeployment(tenantDomain, onProgress) {
   const maxAttempts = 120; // 10 minutes max
   const interval = 5000;
 
- const deploymentStepsMap = {
-  1: { message: 'Setting up your database...', progress: 10 },
-  2: { message: 'Preparing your database structure...', progress: 25 },
-  3: { message: 'Database setup complete!', progress: 40 },
-  4: { message: 'Populating your database with initial data...', progress: 55 },
-  5: { message: 'Data added successfully!', progress: 70 },
-  6: { message: 'Configuring your domain...', progress: 85 },
-  7: { message: 'Your domain is ready to use!', progress: 100 },
-};
-
+  // Map backend status strings to friendly messages
+  const deploymentStatusMap = {
+    database_created: 'Setting up your database...',
+    database_migrating: 'Preparing your database structure...',
+    database_migrated: 'Database setup complete!',
+    database_seeding: 'Populating your database with initial data...',
+    database_seeded: 'Data added successfully!',
+    domain_created: 'Configuring your domain...',
+    deployed: 'Your workspace is ready!',
+  };
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -63,33 +65,29 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
 
       const json = await res.json();
       const data = json.data || {};
-
-      // numeric step (if your backend returns it)
-      const step = data.step || 0;
+      const statusKey = data.status; // e.g., 'database_created'
       const error = data.error;
 
-      // map step to message & progress
-      const mapped = deploymentStepsMap[step] || { message: 'Processing...', progress: Math.min((attempt / maxAttempts) * 90, 90) };
+      // Map backend status to message only
+      const message = deploymentStatusMap[statusKey] || 'Processing...';
 
       onProgress({
-        message: mapped.message,
-        progress: mapped.progress,
-        rawStatus: data.status,
-        step,
+        message,
+        rawStatus: statusKey,
         error,
       });
 
-      // success check: step 7 = deployed
-      if (step === 7) {
-        onProgress({ message: 'All done! Redirecting...', progress: 100 });
+      // Success check
+      if (statusKey === 'deployed') {
+        onProgress({ message: 'All done! Redirecting...' });
         return {
           success: true,
           frontendUrl: data.frontendUrl || `https://${tenantDomain}.wutet.com/login`,
         };
       }
 
-      // handle explicit failure
-      if (error || data.status === 'failed') {
+      // Handle failure
+      if (error || statusKey === 'failed') {
         throw new Error(error || 'Deployment failed');
       }
 
@@ -97,7 +95,6 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
       console.error('Polling error:', err);
       onProgress({
         message: 'Waiting for server...',
-        progress: Math.min((attempt / maxAttempts) * 90, 90),
         error: err.message,
       });
 

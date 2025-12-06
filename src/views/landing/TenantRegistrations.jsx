@@ -87,68 +87,49 @@ export default function TenantRegistration() {
       .finally(() => setLoadingPlans(false));
   }, []);
 
-  const handleSubmit = async (values) => {
-    setIsDeploying(true);
+const handleSubmit = async (values) => {
     const tenant = values.domain_name.toLowerCase();
-    setDeployInfo({
-      tenant,
-      status: { message: 'Registering your company...', progress: 15 },
-    });
+    const payload = {
+      company_name: values.company_name,
+      domain_name: tenant,
+      company_email: values.company_email,
+      company_phone: values.company_phone,
+      country: values.country,
+      region: values.region,
+      company_size: sizeMap[values.company_size],
+      industry_type: values.industry_type,
+      contact_person_name: values.contact_person_name,
+      contact_person_email: values.contact_person_email,
+      contact_person_phone: values.contact_person_phone,
+      plan_id: values.plan_id,
+    };
 
     try {
-      const payload = {
-        company_name: values.company_name,
-        domain_name: tenant,
-        company_email: values.company_email,
-        company_phone: values.company_phone,
-        country: values.country,
-        region: values.region,
-        company_size: sizeMap[values.company_size],
-        industry_type: values.industry_type,
-        contact_person_name: values.contact_person_name,
-        contact_person_email: values.contact_person_email,
-        contact_person_phone: values.contact_person_phone,
-        plan_id: values.plan_id,
-      };
-
-      // Step 1: Register tenant
       await registerTenant(payload);
       localStorage.setItem('current_tenant', tenant);
+      toast.success('Registration successful! Starting workspace deployment...');
 
-      // Step 2: Wait for deployment
-          await waitForTenantDeployment(tenant, (progress) => {
-        console.log('Progress update:', progress); // ← Add this to see it working!
+      setIsDeploying(true);
+      setDeployInfo({ tenant, status: { message: 'Initializing deployment...' } });
 
-        setDeployInfo((prev) => ({
-          tenant: prev.tenant,
-          status: {
-            message: progress.message || 'Deploying your workspace...',
-            progress: progress.progress ?? 60,
-            error: progress.error,
-            rawStatus: progress.rawStatus,
-          },
-        }));
+      await waitForTenantDeployment(tenant, (statusUpdate) => {
+        setDeployInfo({ tenant, status: statusUpdate });
       });
 
-      // Success
-      toast.success('Your workspace is ready! Redirecting...');
+      toast.success('Workspace ready! Redirecting...');
       setTimeout(() => {
         window.location.href = `https://${tenant}.wutet.com/login`;
       }, 2500);
-    } catch (error) {
-      toast.error(error.data.message || 'Failed to create workspace');
+
+    } catch (err) {
+      const msg = err?.data?.message || err?.message || 'Registration failed';
+      toast.error(msg);
       setIsDeploying(false);
     }
   };
 
   if (isDeploying) {
-    return (
-      <DeployingWorkspace
-        tenant={deployInfo.tenant}
-        status={deployInfo.status}
-        progress={deployInfo.status.progress}
-      />
-    );
+    return <DeployingWorkspace tenant={deployInfo.tenant} status={deployInfo.status} />;
   }
 
   return (
@@ -576,6 +557,7 @@ export default function TenantRegistration() {
           </Box>
         </Paper>
       </Box>
+      <ToastContainer/>
     </PublicLayout>
   );
 }
