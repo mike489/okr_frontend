@@ -38,34 +38,49 @@ export async function registerTenant(payload) {
 
 // ONLY ONE VERSION — CLEAN & FINAL
 export async function waitForTenantDeployment(tenantDomain, onProgress) {
-  const maxAttempts = 120;   // 120 × 5s = 10 minutes max
+  const maxAttempts = 120; // 10 minutes max
   const interval = 5000;
+
+ const deploymentStepsMap = {
+  1: { message: 'Setting up your database...', progress: 10 },
+  2: { message: 'Preparing your database structure...', progress: 25 },
+  3: { message: 'Database setup complete!', progress: 40 },
+  4: { message: 'Populating your database with initial data...', progress: 55 },
+  5: { message: 'Data added successfully!', progress: 70 },
+  6: { message: 'Configuring your domain...', progress: 85 },
+  7: { message: 'Your domain is ready to use!', progress: 100 },
+};
+
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const res = await fetch(`https://backend.wutet.com/api/central/tenant-deployment-status/${tenantDomain}`, {
-        headers: { Accept: 'application/json' },
-      });
+      const res = await fetch(
+        `https://backend.wutet.com/api/central/tenant-deployment-status/${tenantDomain}`,
+        { headers: { Accept: 'application/json' } }
+      );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const json = await res.json();
       const data = json.data || {};
-      const status = data.status;
-      const progress = data.progress || 0;
 
-      // Send raw status as message — you already display it nicely in UI
+      // numeric step (if your backend returns it)
+      const step = data.step || 0;
+      const error = data.error;
+
+      // map step to message & progress
+      const mapped = deploymentStepsMap[step] || { message: 'Processing...', progress: Math.min((attempt / maxAttempts) * 90, 90) };
+
       onProgress({
-        message: status || 'Working...',
-        progress: Math.min(progress, 98),
-        rawStatus: status,
+        message: mapped.message,
+        progress: mapped.progress,
+        rawStatus: data.status,
+        step,
+        error,
       });
 
-      // Final success states
-      if (['deployed', 'completed', 'ready', 'active'].includes(status?.toLowerCase())) {
+      // success check: step 7 = deployed
+      if (step === 7) {
         onProgress({ message: 'All done! Redirecting...', progress: 100 });
         return {
           success: true,
@@ -73,9 +88,9 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
         };
       }
 
-      // Explicit failure
-      if (status === 'failed' || data.error) {
-        throw new Error(data.error || 'Deployment failed');
+      // handle explicit failure
+      if (error || data.status === 'failed') {
+        throw new Error(error || 'Deployment failed');
       }
 
     } catch (err) {
@@ -91,7 +106,6 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
       }
     }
 
-    // Wait before next poll
     await new Promise(resolve => setTimeout(resolve, interval));
   }
 }
