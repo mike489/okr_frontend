@@ -136,7 +136,7 @@ export default function TenantRegistration() {
         window.location.href = `https://${tenant}.wutet.com/login`;
       }, 2500);
     } catch (error) {
-      toast.error(error.message || 'Failed to create workspace');
+      toast.error(error.data.message || 'Failed to create workspace');
       setIsDeploying(false);
     }
   };
