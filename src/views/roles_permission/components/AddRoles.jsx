@@ -41,7 +41,8 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
   const handleFetchingPermissions = async () => {
     setPermissionLoading(true);
     const token = await GetToken();
-    const Api = Backend.auth + Backend.permissi;
+    const Api = Backend.pmsUrl(Backend.permissions);
+
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',

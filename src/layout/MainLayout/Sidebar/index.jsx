@@ -7,15 +7,21 @@ import {
   Avatar,
   Typography,
   Tooltip,
-  alpha
+  alpha,
 } from '@mui/material';
-import { IconChevronLeft, IconChevronRight, IconUser } from '@tabler/icons-react';
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconUser,
+} from '@tabler/icons-react';
 
 import LogoSection from '../LogoSection';
 import HomeMenu from './HomeMenu';
 import MenuList from './MenuList';
 import { ActiveUnitSelector } from './active-unit-selector';
 import { useSelector } from 'react-redux';
+import GetFiscalYear from 'utils/components/GetFiscalYear';
+import FiscalYearMenu from '../Header/FiscalYear';
 
 const drawerWidth = 280;
 const drawerMiniWidth = 78;
@@ -40,10 +46,9 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
         top: 0,
         overflow: 'hidden',
         boxShadow: '6px 0 20px rgba(0,0,0,0.15)',
-        transition: 'width 350ms cubic-bezier(0.4, 0, 0.2, 1)'
+        transition: 'width 350ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-
       <Box
         sx={{
           height: 70,
@@ -51,12 +56,11 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           // px: isMini ? 2 : 3,
-          borderBottom: `1px solid ${alpha('#fff', 0.15)}`
+          borderBottom: `1px solid ${alpha('#fff', 0.15)}`,
         }}
       >
         <LogoSection mini={isMini} />
 
-   
         {/* {isDesktop && (
           <Tooltip title={isMini ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
             <IconButton
@@ -76,7 +80,10 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
       {/* UNIT SELECTOR */}
       {managerUnits?.units?.length > 1 && !isMini && (
         <Box sx={{ px: 3, py: 2 }}>
-          <ActiveUnitSelector data={managerUnits.units} active={managerUnits.activeUnit} />
+          <ActiveUnitSelector
+            data={managerUnits.units}
+            active={managerUnits.activeUnit}
+          />
         </Box>
       )}
 
@@ -87,25 +94,18 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
           <MenuList mini={isMini} />
         </Stack>
       </Box>
-
-      {/* USER CARD */}
-      {!isMini && (
-        <Box sx={{ p: 3, borderTop: `1px solid ${alpha('#fff', 0.15)}` }}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar sx={{ bgcolor: 'white', color: 'primary.main' }}>
-              {user?.name?.[0] || <IconUser />}
-            </Avatar>
-            <Box>
-              <Typography variant="subtitle2" fontWeight={600} noWrap>
-                {user?.name || 'User'}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.8 }} noWrap>
-                {user?.email || 'user@example.com'}
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
-      )}
+      <Stack
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          width: '100%',
+          p: 2,
+          borderTop: `1px solid ${alpha('#fff', 0.15)}`,
+          bgcolor: 'primary.main',
+        }}
+      >
+        <FiscalYearMenu />
+      </Stack>
     </Box>
   );
 };

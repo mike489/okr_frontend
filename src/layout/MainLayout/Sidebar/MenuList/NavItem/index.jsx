@@ -2,6 +2,7 @@
 import { ListItemButton, ListItemIcon, ListItemText,Typography ,Box , Badge, Tooltip, alpha } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import is from 'date-fns/esm/locale/is/index.js';
 
 const NavItem = ({ item, mini }) => {
   const theme = useTheme();
@@ -44,7 +45,8 @@ const NavItem = ({ item, mini }) => {
             top: 0,
             bottom: 0,
             width: 4,
-            bgcolor: 'primary.main',
+            bgcolor: 'secondary.main',
+            color:'secondary.main',
             borderRadius: '0 4px 4px 0',
             boxShadow: `0 0 15px ${theme.palette.primary.main}`
           }}
@@ -54,7 +56,7 @@ const NavItem = ({ item, mini }) => {
       <ListItemIcon
         sx={{
           minWidth: mini ? 'auto' : 44,
-          color: 'inherit',
+          color:isActive?'secondary.main': 'white' ,
           mr: mini ? 0 : 2
         }}
       >
@@ -67,7 +69,7 @@ const NavItem = ({ item, mini }) => {
             <Typography
               variant="body2"
               fontWeight={isActive ? 600 : 500}
-              sx={{ color: 'inherit' }}
+              sx={{ color:isActive?'secondary.main': 'white' }}
             >
               {item.title}
             </Typography>

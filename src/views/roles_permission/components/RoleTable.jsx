@@ -57,7 +57,9 @@ const RoleTable = ({ searchQuery }) => {
   const handleFetchingRole = () => {
     setRoleLoading(true);
     const token = localStorage.getItem('token');
-    const Api = `${Backend.auth}${Backend.roles}`;
+  const Api = Backend.pmsUrl(Backend.roles);
+
+
 
     const header = {
       Authorization: `Bearer ${token}`,

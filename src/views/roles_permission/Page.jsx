@@ -31,7 +31,7 @@ const Page = () => {
         })
         .filter((uuid) => uuid !== null);
 
-      const response = await fetch(`${Backend.auth + Backend.roles}`, {
+      const  response = await fetch(Backend.pmsUrl(Backend.roles), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

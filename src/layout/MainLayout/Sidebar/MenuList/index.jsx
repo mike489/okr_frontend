@@ -98,7 +98,7 @@ const MenuList = ({ mini = false }) => {
         <ListItemIcon
           sx={{
             minWidth: mini ? 'auto' : 48,
-            color: 'inherit',
+            color: 'white',
             mr: mini ? 0 : 3
           }}
         >
@@ -111,7 +111,7 @@ const MenuList = ({ mini = false }) => {
               <Typography
                 variant="body2"
                 fontWeight={isSelected ? 600 : 500}
-                sx={{ color: 'inherit' }}
+                sx={{ color: 'white' }}
               >
                 {item.title}
               </Typography>

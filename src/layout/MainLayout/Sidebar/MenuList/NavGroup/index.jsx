@@ -97,11 +97,11 @@ const NavGroup = ({ item, mini = false }) => {
                 transition: 'all 0.2s'
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color:'white' }}>
                 {item.icon && <item.icon size="1.3rem" stroke={1.5} />}
                 <span>{item.title}</span>
               </Box>
-              {open ? <IconChevronUp size="1rem" /> : <IconChevronDown size="1rem" />}
+              {open ? <IconChevronUp size="1rem" color='white' /> : <IconChevronDown size="1rem" color='white' />}
             </Typography>
           )
         }

@@ -79,7 +79,7 @@ const Units = () => {
     setUnitLoading(true);
     try {
       const token = await GetToken();
-      const Api = Backend.api + Backend.types;
+      const Api = Backend.pmsUrl(Backend.types);
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -133,7 +133,7 @@ const Units = () => {
     setIsAdding(true);
     try {
       const token = await GetToken();
-      const Api = Backend.api + Backend.units;
+      const Api = Backend.pmsUrl(Backend.units) ;
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -171,7 +171,7 @@ const Units = () => {
     setIsAdding(true);
     try {
       const token = await GetToken();
-      const Api = `${Backend.api}${Backend.units}/${selectedUnit.id}`;
+      const Api = `${Backend.pmsUrl(Backend.units)}/${selectedUnit.id}`;
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -209,7 +209,7 @@ const Units = () => {
     setIsAdding(true);
     try {
       const token = await GetToken();
-      const Api = Backend.api + Backend.types;
+      const Api = Backend.pmsUrl(Backend.types);
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -276,7 +276,7 @@ const Units = () => {
   const handleDelete = async (id, type = 'unit') => {
     try {
       const token = await GetToken();
-      const Api = `${Backend.api}${type === 'unit' ? Backend.units : Backend.types}/${id}`;
+     const Api = `${Backend.pmsUrl(type === 'unit' ? Backend.units : Backend.types)}/${id}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -302,7 +302,8 @@ const Units = () => {
     setLoading(true);
     try {
       const token = await GetToken();
-      const Api = `${Backend.api}${Backend.units}?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
+      const Api = `${Backend.pmsUrl(Backend.units)}?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
+
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -334,7 +335,7 @@ const Units = () => {
   const handleUpload = async (file) => {
     try {
       const token = await GetToken();
-      const Api = Backend.api + Backend.unitexcel;
+      const Api = Backend.pmsUrl(Backend.unitexcel);
       const headers = {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',

@@ -61,6 +61,7 @@ const Backend = {
 
   /** Units & Roles */
   roles: 'roles',
+  permissions: 'permissions', 
   units: 'units',
   allUnits: 'units',
   myUnit: 'my-unit',

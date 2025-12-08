@@ -15,7 +15,8 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
   const handleFetchingPermissions = () => {
     setPermissionLoading(true);
     const token = localStorage.getItem('token');
-    const Api = Backend.auth + Backend.permissi;
+    const Api = Backend.pmsUrl(Backend.permissions);
+
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',

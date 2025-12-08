@@ -72,7 +72,7 @@ const MainLayout = () => {
           }}
         >
           <Header onDrawerToggle={toggle} drawerOpen={opened} />
-          <GetFiscalYear />
+        
         </Box>
 
         {/* CONTENT */}

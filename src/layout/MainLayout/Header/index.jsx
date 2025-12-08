@@ -7,7 +7,7 @@ import { IconMenu2 } from '@tabler/icons-react';
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import LogoSection from '../LogoSection';
-import FiscalYearMenu from './FiscalYear';
+
 import IsEmployee from 'utils/is-employee';
 
 const Header = ({ onDrawerToggle, drawerOpen }) => {
@@ -45,7 +45,7 @@ const Header = ({ onDrawerToggle, drawerOpen }) => {
       </Box>
 
       {/* CENTER */}
-      <FiscalYearMenu />
+      {/* <FiscalYearMenu /> */}
 
       {/* RIGHT */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
