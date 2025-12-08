@@ -13,12 +13,12 @@ const AuthLogin = Loadable(lazy(() => import('views/authentication/Login')));
 
 // ==============================|| TENANT CHECK ||============================== //
 
-let tenant = localStorage.getItem("current_tenant");
+let tenant = localStorage.getItem("current_tenant") || "acme";
 console.log("Tenant:", tenant)
 
 if (!tenant) {
   const parts = window.location.hostname.split(".");
-  if (parts.length >= 3) tenant = parts[0]; 
+  if (parts.length >= 3) tenant = parts[0] || "acme"; 
 }
 
 // ==============================|| ROUTES ||============================== //

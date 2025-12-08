@@ -10,6 +10,8 @@ const Home = Loadable(lazy(() => import('views/dashboard')));
 const Units = Loadable(lazy(() => import('views/units')));
 const MyUnits = Loadable(lazy(() => import('views/units/my_units')));
 const MyChildUnit = Loadable(lazy(() => import('views/my-child-unit')));
+const Company = Loadable(lazy(() => import('views/company/index')));
+
 
 const PendingTasks = Loadable(lazy(() => import('views/todo/pending-tasks')));
 const UnitPlan = Loadable(lazy(() => import('views/my-child-unit/UnitPlan')));
@@ -278,6 +280,14 @@ const MainRoutes = {
       element: (
         <Protected>
           <MyChildUnit/>
+        </Protected>
+      ),
+    },
+    {
+      path: 'company',
+      element: (
+        <Protected>
+          <Company/>
         </Protected>
       ),
     },

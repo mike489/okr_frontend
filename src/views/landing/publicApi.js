@@ -1,15 +1,12 @@
 
 
-const RAW_API_URL = import.meta.env.VITE_PUBLIC_API_URL || "";
-const API_URL = RAW_API_URL.replace(/\/+$/, "");
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL || "";
+
 
 // Prevent double slashes in URLs
-function buildUrl(endpoint) {
-  return `${API_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`.replace(/\/+/g, '/');
-}
 
 export async function fetchPricingPlans() {
-  const url = 'https://backend.wutet.com/api/central/plans';
+  const url = `${API_URL}/plans`;
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
 
   if (!res.ok) throw new Error('Failed to load pricing plans');
@@ -17,7 +14,7 @@ export async function fetchPricingPlans() {
   return json?.data ?? [];
 }
 export async function registerTenant(payload) {
-  const url = 'https://backend.wutet.com/api/central/tenants';
+  const url = `${API_URL}/tenants`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -57,7 +54,7 @@ export async function waitForTenantDeployment(tenantDomain, onProgress) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const res = await fetch(
-        `https://backend.wutet.com/api/central/tenant-deployment-status/${tenantDomain}`,
+        `${API_URL}/tenant-deployment-status/${tenantDomain}`,
         { headers: { Accept: 'application/json' } }
       );
 

@@ -81,11 +81,15 @@ export default function TenantRegistration() {
   });
 
   useEffect(() => {
-    fetchPricingPlans()
-      .then(setPlans)
-      .catch(() => toast.error('Failed to load pricing plans'))
-      .finally(() => setLoadingPlans(false));
-  }, []);
+  fetchPricingPlans()
+    .then((plans) => setPlans(plans))
+    .catch((err) => {
+      console.error(err.data.message);
+      toast.error(err.data.message ||'Failed to load pricing plans');
+    })
+    .finally(() => setLoadingPlans(false));
+}, []);
+
 
 const handleSubmit = async (values) => {
     const tenant = values.domain_name.toLowerCase();

@@ -22,7 +22,10 @@ const pmsUrl = (path) => {
   return `${PMS_API}/${tenant}/api/${path}`;
 };
 
-
+const TenantUrl = (path) => {
+  const tenant = getTenant();
+  return `${PMS_API}/${tenant}/api`;
+};
 // ================================
 // Build AUTH API URL (no tenant)
 // Example → https://backend.wutet.com/auth/login
@@ -139,6 +142,7 @@ const Backend = {
   /** Helper Functions */
   pmsUrl,
   authUrl,
+  TenantUrl,
 };
 
 export default Backend;

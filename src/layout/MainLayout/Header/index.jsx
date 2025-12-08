@@ -1,76 +1,64 @@
+// layout/Header/Header.jsx
 import PropTypes from 'prop-types';
-
-// material-ui
 import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
+import { Box, IconButton, useMediaQuery } from '@mui/material';
+import { IconMenu2 } from '@tabler/icons-react';
 
-// project imports
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
-
-// assets
-import { IconMenu2 } from '@tabler/icons-react';
-import { IconButton, useMediaQuery } from '@mui/material';
-// import { useSelector } from 'react-redux';
 import LogoSection from '../LogoSection';
 import FiscalYearMenu from './FiscalYear';
 import IsEmployee from 'utils/is-employee';
 
-// ==============================|| MAIN NAVBAR HEADER ||============================== //
-
-const Header = ({ handleLeftDrawerToggle, drawerOpen }) => {
+const Header = ({ onDrawerToggle, drawerOpen }) => {
   const theme = useTheme();
-  const bigDevice = useMediaQuery(theme.breakpoints.up('md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const isEmployee = IsEmployee();
-  // const user = useSelector((state) => state.user.user);
-  // const isSuperAdmin =
-  //   user?.roles?.length === 1 &&
-  //   user.roles[0].name.toLowerCase() === 'super_admin';
+
+  // Show hamburger on:
+  // - Mobile (regardless of role)
+  // - Desktop only if employee (non-employee (admin, etc.)
+  const showToggleButton = !isDesktop || !isEmployee;
 
   return (
-    <>
-      {/* logo & toggler button */}
-      <Box
-        sx={{
-          display: 'flex',
-          zIndex: 4,
-        }}
-      >
-        {!isEmployee ? (
-          <IconButton variant="rounded" onClick={handleLeftDrawerToggle}>
-            <IconMenu2
-              stroke={1.5}
-              size="1.6rem"
-              color={theme.palette.text.primary}
-            />
+    <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      {/* LEFT: Toggle + Logo */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* HAMBURGER MENU — THIS IS THE FIX */}
+        {showToggleButton && (
+          <IconButton
+            onClick={onDrawerToggle}
+            size="large"
+            edge="start"
+            color="inherit"
+            sx={{
+              borderRadius: 2,
+              '&:hover': { bgcolor: 'action.hover' }
+            }}
+          >
+            <IconMenu2 stroke={1.5} size="1.8rem" />
           </IconButton>
-        ) : bigDevice ? (
-          <IconButton variant="rounded" onClick={handleLeftDrawerToggle}>
-            <IconMenu2
-              stroke={1.5}
-              size="1.6rem"
-              color={theme.palette.text.primary}
-            />
-          </IconButton>
-        ) : null}
+        )}
 
-        <Box sx={{ marginLeft: !isEmployee || (bigDevice && 2.4) }}>
-          {!bigDevice ? <LogoSection /> : !drawerOpen ? <LogoSection /> : null}
-        </Box>
+        {/* Logo: show when sidebar is mini (desktop) OR on mobile */}
+        {/* {(!isDesktop || !drawerOpen) && <LogoSection />} */}
       </Box>
-      {/* {!isSuperAdmin && <FiscalYearMenu />} */}
-      {<FiscalYearMenu />}
-      <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ flexGrow: 1 }} />
-      <NotificationSection />
-      <ProfileSection />
-    </>
+
+      {/* CENTER */}
+      <FiscalYearMenu />
+
+      {/* RIGHT */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <NotificationSection />
+        <ProfileSection />
+      </Box>
+    </Box>
   );
 };
 
 Header.propTypes = {
-  handleLeftDrawerToggle: PropTypes.func,
-  drawerOpen: PropTypes.bool,
+  onDrawerToggle: PropTypes.func.isRequired,
+  drawerOpen: PropTypes.bool.isRequired
 };
 
 export default Header;

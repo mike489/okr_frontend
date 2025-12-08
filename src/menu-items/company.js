@@ -1,13 +1,12 @@
 import {
   IconHome,
-  IconGauge,
+  IconBuildingBank,
   IconLayoutCards,
   IconTrophy,
   IconZoomScan,
   IconCircleCheck,
   IconHazeMoon,
   IconList,
-  IconChartInfographic,
   IconKey,
   IconAnalyze,
   IconSteam,
@@ -30,14 +29,14 @@ import {
 
 const icons = {
   IconHome,
-  IconGauge,
+  IconBuildingBank,
   IconLayoutCards,
   IconTrophy,
   IconZoomScan,
   IconCircleCheck,
   IconHazeMoon,
   IconList,
-  IconChartInfographic,
+
   IconKey,
   IconAnalyze,
   IconSteam,
@@ -66,33 +65,27 @@ export const company = () => {
   const childrenTemp = [];
   const addedPermissions = new Set();
 
-  const userPermissions = [
-    'read_key_result',
-    // 'read:monitoringReport',
-    // 'read:myteamplanreport',
-    // 'read:reporting',
-    // 'read:activitytype',
-  ];
+  const auth = getRolesAndPermissionsFromToken();
+
+  const userPermissions = ['read_key_result'];
 
   const permissionMap = {
-    'read_key_result': {
+    read_key_result: {
       id: 'company',
       title: 'Company',
       url: '/company',
-      icon: icons.IconChartInfographic,
+      icon: icons.IconBuildingBank,
     },
   };
 
   if (auth) {
     userPermissions.forEach((permissionName) => {
       auth.forEach((role) => {
-        const setting =
-          permissionMap[permissionName] ||
-          permissionMap[`${permissionName}-approvals`];
+        const setting = permissionMap[permissionName];
 
         if (setting && !addedPermissions.has(setting.id)) {
           const hasPermission = role.permissions.find(
-            (per) => per.name === permissionName,
+            (per) => per.name === permissionName
           );
 
           if (hasPermission) {
@@ -110,8 +103,9 @@ export const company = () => {
   return {
     id: 'company',
     title: 'Company',
-    icon: icons.IconGauge,
-    type: 'item',
+    type: 'group',
+    icon: icons.IconBuildingBank,
     children: childrenTemp,
   };
 };
+

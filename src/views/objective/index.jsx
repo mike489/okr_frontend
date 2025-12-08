@@ -24,6 +24,7 @@ import GetToken from 'utils/auth-token';
 import Backend from 'services/backend';
 import hasPermission from 'utils/auth/hasPermission';
 import EditObjective from './components/EditObjective';
+import { useSelector } from 'react-redux';
 
 const Objective = () => {
   const theme = useTheme();
@@ -37,7 +38,12 @@ const Objective = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const selectedYear = useSelector(
+  (state) => state.customization.selectedFiscalYear
+);
+
   const [pagination, setPagination] = useState({
+
     page: 0,
     per_page: 10,
     last_page: 0,
@@ -99,37 +105,55 @@ const Objective = () => {
     }
   };
 
-  const handleObjectiveAddition = async (values) => {
-    setIsAdding(true);
-    const token = await GetToken();
-    const Api = Backend.pmsUrl(Backend.objectives);
+ const handleObjectiveAddition = async (values) => {
+  setIsAdding(true);
 
-    try {
-      const response = await fetch(Api, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify(values),
-      });
+  const token = await GetToken();
+  const Api = Backend.pmsUrl(Backend.objectives);
 
-      const responseData = await response.json();
+  // Add fiscal_year_id to the payload
+  const payload = {
+    ...values,
+    fiscal_year_id: selectedYear?.id, // REQUIRED by backend
+  };
 
-      if (responseData.success) {
-        toast.success(responseData.message || 'Objective added successfully!');
-        handleFetchingObjective();
-        handleModalClose();
+  try {
+    const response = await fetch(Api, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseData = await response.json();
+
+    if (responseData.success) {
+      toast.success(responseData.message || 'Objective added successfully!');
+      handleFetchingObjective();
+      handleModalClose();
+    } else {
+      // Show backend validation errors clearly
+      if (responseData.data?.errors) {
+        const errorMessages = Object.values(responseData.data.errors)
+          .flat()
+          .join('\n');
+        toast.error(errorMessages);
       } else {
         toast.error(responseData.message || 'Failed to add objective');
       }
-    } catch (error) {
-      toast.error(error.message || 'Failed to add objective');
-    } finally {
-      setIsAdding(false);
     }
-  };
+
+  } catch (error) {
+    toast.error(error.message || 'Failed to add objective');
+
+  } finally {
+    setIsAdding(false);
+  }
+};
+
 
   const handleObjectiveUpdate = async (values) => {
     setIsEditing(true);

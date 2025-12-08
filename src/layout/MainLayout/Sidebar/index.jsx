@@ -1,107 +1,113 @@
-import PropTypes from 'prop-types';
+// layout/Sidebar/Sidebar.jsx
+import { useTheme } from '@mui/material/styles';
+import {
+  Box,
+  Stack,
+  IconButton,
+  Avatar,
+  Typography,
+  Tooltip,
+  alpha
+} from '@mui/material';
+import { IconChevronLeft, IconChevronRight, IconUser } from '@tabler/icons-react';
 
-// material-ui
-import { Typography, useTheme } from '@mui/material';
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import Stack from '@mui/material/Stack';
-import useMediaQuery from '@mui/material/useMediaQuery';
-
-// third-party
-import { BrowserView, MobileView } from 'react-device-detect';
-
-// project imports
-import { drawerWidth } from 'store/constant';
-import MenuList from './MenuList';
 import LogoSection from '../LogoSection';
 import HomeMenu from './HomeMenu';
+import MenuList from './MenuList';
 import { ActiveUnitSelector } from './active-unit-selector';
 import { useSelector } from 'react-redux';
 
-// ==============================|| SIDEBAR DRAWER ||============================== //
+const drawerWidth = 280;
+const drawerMiniWidth = 78;
 
-const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
+const Sidebar = ({ open, onToggle, isDesktop }) => {
   const theme = useTheme();
-  const matchUpMd = useMediaQuery(theme.breakpoints.up('md'));
-
   const managerUnits = useSelector((state) => state.managerUnits);
+  const user = useSelector((state) => state.user.user);
 
-  const drawer = (
-    <>
-      <Box
-        sx={{
-          position: 'sticky',
-          top: 0,
-          width: drawerWidth,
-          zIndex: 1,
-          paddingY: 1.6,
-          paddingX: 2,
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <LogoSection />
-      </Box>
-      <BrowserView
-        style={{
-          marginTop: 6,
-          paddingLeft: 6,
-          paddingRight: 12,
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        {managerUnits?.units.length > 1 ? (
-          <ActiveUnitSelector
-            data={managerUnits?.units}
-            active={managerUnits.activeUnit}
-            sx={{ my: 2 }}
-          />
-        ) : null}
-        <HomeMenu />
-        <MenuList />
-      </BrowserView>
-      <MobileView>
-        <Box sx={{ px: 2 }}>
-          <HomeMenu />
-          <MenuList />
-        </Box>
-      </MobileView>
-    </>
-  );
-
-  const container =
-    window !== undefined ? () => window.document.body : undefined;
+  const isMini = isDesktop && !open;
+  const width = isMini ? drawerMiniWidth : drawerWidth;
 
   return (
     <Box
-      component="nav"
-      sx={{ flexShrink: { md: 50 }, width: matchUpMd ? drawerWidth : 'auto' }}
-      aria-label="drawers"
+      sx={{
+        width,
+        flexShrink: 0,
+        bgcolor: 'primary.main',
+        color: 'white',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        overflow: 'hidden',
+        boxShadow: '6px 0 20px rgba(0,0,0,0.15)',
+        transition: 'width 350ms cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
     >
-      <Drawer
-        container={container}
-        variant={matchUpMd ? 'persistent' : 'temporary'}
-        anchor="left"
-        open={drawerOpen}
-        onClose={drawerToggle}
+
+      <Box
         sx={{
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            background: theme.palette.background.paper,
-          },
+          height: 70,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          // px: isMini ? 2 : 3,
+          borderBottom: `1px solid ${alpha('#fff', 0.15)}`
         }}
-        ModalProps={{ keepMounted: true }}
-        color="inherit"
       >
-        {drawer}
-      </Drawer>
+        <LogoSection mini={isMini} />
+
+   
+        {/* {isDesktop && (
+          <Tooltip title={isMini ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
+            <IconButton
+              onClick={onToggle}
+              sx={{
+                color: 'white',
+                bgcolor: alpha('#fff', 0.15),
+                '&:hover': { bgcolor: alpha('#fff', 0.25) }
+              }}
+            >
+              {isMini ? <IconChevronRight /> : <IconChevronLeft />}
+            </IconButton>
+          </Tooltip>
+        )} */}
+      </Box>
+
+      {/* UNIT SELECTOR */}
+      {managerUnits?.units?.length > 1 && !isMini && (
+        <Box sx={{ px: 3, py: 2 }}>
+          <ActiveUnitSelector data={managerUnits.units} active={managerUnits.activeUnit} />
+        </Box>
+      )}
+
+      {/* MAIN MENU */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
+        <Stack spacing={1} sx={{ px: isMini ? 1.5 : 2 }}>
+          <HomeMenu mini={isMini} />
+          <MenuList mini={isMini} />
+        </Stack>
+      </Box>
+
+      {/* USER CARD */}
+      {!isMini && (
+        <Box sx={{ p: 3, borderTop: `1px solid ${alpha('#fff', 0.15)}` }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar sx={{ bgcolor: 'white', color: 'primary.main' }}>
+              {user?.name?.[0] || <IconUser />}
+            </Avatar>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600} noWrap>
+                {user?.name || 'User'}
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.8 }} noWrap>
+                {user?.email || 'user@example.com'}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      )}
     </Box>
   );
-};
-
-Sidebar.propTypes = {
-  drawerOpen: PropTypes.bool,
-  drawerToggle: PropTypes.func,
-  window: PropTypes.object,
 };
 
 export default Sidebar;

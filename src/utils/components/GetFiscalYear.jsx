@@ -25,16 +25,20 @@ const GetFiscalYear = () => {
 
         const data = await response.json();
 
-        if (data.success) {
-          dispatch({ type: SET_FISCAL_YEARS, fiscalYears: data?.data.data});
-          if (selectedFiscal?.id) {
-            const selected = data?.data?.find((year) => year.id == selectedFiscal?.id);
-            if (data.data.length > 0) {
-              dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: selected });
-            }
-          } else if (data.data.length > 0) {
-            dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: data.data[0] });
-          }
+       if (data.success) {
+  const fiscalYears = data?.data?.data || []; // <-- this is the array
+  dispatch({ type: SET_FISCAL_YEARS, fiscalYears });
+
+  if (selectedFiscal?.id) {
+    const selected = fiscalYears.find((year) => year.id === selectedFiscal.id);
+    if (selected) {
+      dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: selected });
+    }
+  } else if (fiscalYears.length > 0) {
+    dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: fiscalYears[0] });
+  }
+
+
         } else if (data.message === 'Unauthorized') {
           logout();
         }

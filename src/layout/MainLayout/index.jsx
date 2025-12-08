@@ -1,102 +1,87 @@
+
 import { Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import { Box, useMediaQuery } from '@mui/material';
 
-// material-ui
-import Box from '@mui/material/Box';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import Customization from 'layout/Customization';
-
-// project imports
-import { styled, useTheme } from '@mui/material';
 import { SET_MENU } from 'store/actions/actions';
-import { drawerWidth } from 'store/constant';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import GetFiscalYear from 'utils/components/GetFiscalYear';
 import BottomTab from 'views/settings/tabs/BottomTab';
 import IsEmployee from 'utils/is-employee';
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
-  ...theme.typography.mainContent,
-  ...(!open && {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen
-    }),
-    [theme.breakpoints.up('md')]: {
-      width: `calc(100% - ${drawerWidth})`
-    },
-    [theme.breakpoints.down('md')]: {
-      width: `100%`
-    },
-    [theme.breakpoints.down('sm')]: {
-      width: `100%`
-    }
-  }),
-  ...(open && {
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen
-    }),
-    marginLeft: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    width: `calc(100% - ${drawerWidth}px)`
-  })
-}));
-
-// ==============================|| MAIN LAYOUT ||============================== //
+const drawerWidth = 280;
+const drawerMiniWidth = 78;
 
 const MainLayout = () => {
-  const leftDrawerOpened = useSelector((state) => state.customization.opened);
   const theme = useTheme();
-  const employee = IsEmployee();
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useDispatch();
-  const handleLeftDrawerToggle = () => {
-    dispatch({ type: SET_MENU, opened: !leftDrawerOpened });
-  };
+  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
+  const isEmployee = IsEmployee();
 
-  const user = useSelector((state) => state.user.user);
-  const isSuperAdmin = user?.roles?.length === 1 && user.roles[0].name.toLowerCase() === 'super_admin';
+  const opened = useSelector((state) => state.customization.opened);
+  const isDesktop = !matchDownMd;
+
+  const toggle = () => dispatch({ type: SET_MENU, opened: !opened });
+  const sidebarWidth = isDesktop
+    ? opened ? drawerWidth : drawerMiniWidth
+    : opened ? drawerWidth : 0;
+
+  const showSidebar = isDesktop || opened;
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      {(!matchDownMd || !employee) && <Sidebar drawerOpen={!matchDownMd ? leftDrawerOpened : !leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />}
-      <Main theme={theme} open={leftDrawerOpened} sx={{ backgroundColor: theme.palette.background.default }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* SIDEBAR — Always render when needed */}
+      {showSidebar && (
+        <Sidebar
+          open={opened}
+          onToggle={toggle}
+          isDesktop={isDesktop}
+        />
+      )}
+
+      {/* MAIN CONTENT — Push content when sidebar is visible */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          width: { xs: '100%', md: `calc(100% - ${sidebarWidth}px)` },
+          // ml: { md: `${sidebarWidth}px` },
+          transition: 'margin 350ms cubic-bezier(0.4, 0, 0.2, 1)',
+          bgcolor: 'background.default'
+        }}
+      >
+        {/* HEADER */}
         <Box
           sx={{
-            position: 'fixed',
+            position: 'sticky',
             top: 0,
-            right: 0,
-            zIndex: 2,
-            paddingX: 2,
-            paddingY: 1.6,
+            zIndex: 1200,
+            height: 70,
+            bgcolor: 'background.paper',
+            backdropFilter: 'blur(12px)',
+            borderBottom: 1,
+            borderColor: 'divider',
             display: 'flex',
+          
             alignItems: 'center',
-            justifyContent: 'space-between',
-            width: {
-              xl: leftDrawerOpened ? `calc(100% - ${drawerWidth}px)` : '100%',
-              lg: leftDrawerOpened ? `calc(100% - ${drawerWidth}px)` : '100%',
-              md: leftDrawerOpened ? `calc(100% - ${drawerWidth}px)` : '100%',
-              sm: '100%',
-              xs: '100%'
-            },
-            backgroundColor: theme.palette.primary.light,
-            borderBottom: 0.6,
-            borderColor: theme.palette.divider
+            // justifyContent: 'space-between',
+            px: { xs: 2, md: 3 },
+            boxShadow: 3
           }}
         >
-          <Header handleLeftDrawerToggle={handleLeftDrawerToggle} drawerOpen={leftDrawerOpened} />
-           <GetFiscalYear />
+          <Header onDrawerToggle={toggle} drawerOpen={opened} />
+          <GetFiscalYear />
         </Box>
 
-        <Outlet />
-      </Main>
-      {matchDownMd && employee && <BottomTab />}
-      {/* <Customization /> */}
+        {/* CONTENT */}
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Outlet />
+        </Box>
+      </Box>
+
+      {matchDownMd && isEmployee && <BottomTab />}
     </Box>
   );
 };

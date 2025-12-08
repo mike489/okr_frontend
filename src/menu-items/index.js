@@ -5,12 +5,12 @@ import { Accounts } from './account';
 import { settings } from './settings';
 import Footer from 'views/authentication/components/Footer';
 import { reports } from './reports';
-// import {company} from './company';
+import {company} from './company';
 
 const menuItems = {
   items: [
     dashboard(),
-    // company(),
+    company(),
     getOrgStructure(),
     reports(),
     Accounts(),
