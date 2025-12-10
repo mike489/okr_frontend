@@ -1,4 +1,4 @@
-// layout/Header/Header.jsx
+
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import { Box, IconButton, useMediaQuery } from '@mui/material';
@@ -15,16 +15,12 @@ const Header = ({ onDrawerToggle, drawerOpen }) => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const isEmployee = IsEmployee();
 
-  // Show hamburger on:
-  // - Mobile (regardless of role)
-  // - Desktop only if employee (non-employee (admin, etc.)
   const showToggleButton = !isDesktop || !isEmployee;
 
   return (
     <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       {/* LEFT: Toggle + Logo */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {/* HAMBURGER MENU — THIS IS THE FIX */}
         {showToggleButton && (
           <IconButton
             onClick={onDrawerToggle}

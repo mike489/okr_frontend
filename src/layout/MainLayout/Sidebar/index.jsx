@@ -88,7 +88,7 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
       )}
 
       {/* MAIN MENU */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 2 }}>
+      <Box sx={{ flexGrow: 1, overflowY: "auto", py: 2, }}>
         <Stack spacing={1} sx={{ px: isMini ? 1.5 : 2 }}>
           <HomeMenu mini={isMini} />
           <MenuList mini={isMini} />
