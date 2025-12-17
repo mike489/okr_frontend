@@ -44,42 +44,29 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
         height: '100vh',
         position: 'sticky',
         top: 0,
-        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         boxShadow: '6px 0 20px rgba(0,0,0,0.15)',
         transition: 'width 350ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
+      {/* HEADER - Fixed height */}
       <Box
         sx={{
           height: 70,
+          flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          // px: isMini ? 2 : 3,
           borderBottom: `1px solid ${alpha('#fff', 0.15)}`,
         }}
       >
         <LogoSection mini={isMini} />
-
-        {/* {isDesktop && (
-          <Tooltip title={isMini ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
-            <IconButton
-              onClick={onToggle}
-              sx={{
-                color: 'white',
-                bgcolor: alpha('#fff', 0.15),
-                '&:hover': { bgcolor: alpha('#fff', 0.25) }
-              }}
-            >
-              {isMini ? <IconChevronRight /> : <IconChevronLeft />}
-            </IconButton>
-          </Tooltip>
-        )} */}
       </Box>
 
-      {/* UNIT SELECTOR */}
+      {/* UNIT SELECTOR - Fixed height when visible */}
       {managerUnits?.units?.length > 1 && !isMini && (
-        <Box sx={{ px: 3, py: 2 }}>
+        <Box sx={{ px: 3, py: 2, flexShrink: 0 }}>
           <ActiveUnitSelector
             data={managerUnits.units}
             active={managerUnits.activeUnit}
@@ -87,17 +74,48 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
         </Box>
       )}
 
-      {/* MAIN MENU */}
-      <Box sx={{ flexGrow: 1, overflowY: "auto", py: 2, }}>
-        <Stack spacing={1} sx={{ px: isMini ? 1.5 : 2 }}>
-          <HomeMenu mini={isMini} />
-          <MenuList mini={isMini} />
-        </Stack>
-      </Box>
-      <Stack
+      {/* MAIN MENU - Scrollable area */}
+      <Box
         sx={{
-          position: 'absolute',
-          bottom: 0,
+          flex: 1,
+          minHeight: 0, // Important for flex scrolling
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            py: 2,
+            // Custom scrollbar styling
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: alpha('#fff', 0.2),
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: alpha('#fff', 0.3),
+            },
+          }}
+        >
+          <Stack spacing={1} sx={{ px: isMini ? 1.5 : 2 }}>
+            <HomeMenu mini={isMini} />
+            <MenuList mini={isMini} />
+          </Stack>
+        </Box>
+      </Box>
+
+      {/* FOOTER - Fixed height at bottom */}
+      <Box
+        sx={{
+          flexShrink: 0,
           width: '100%',
           p: 2,
           borderTop: `1px solid ${alpha('#fff', 0.15)}`,
@@ -105,7 +123,7 @@ const Sidebar = ({ open, onToggle, isDesktop }) => {
         }}
       >
         <FiscalYearMenu />
-      </Stack>
+      </Box>
     </Box>
   );
 };

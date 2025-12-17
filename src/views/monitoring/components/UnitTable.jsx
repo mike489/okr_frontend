@@ -1,7 +1,7 @@
+// UnitTable.js - Now using separate modal component
 import React, { useState } from 'react';
 import {
   Button,
-  CircularProgress,
   Collapse,
   IconButton,
   Paper,
@@ -12,161 +12,369 @@ import {
   TableHead,
   TableRow,
   Typography,
-  useTheme
+  Chip,
+  Box,
+  LinearProgress,
+  useTheme,
+  Stack,
 } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import {
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Business,
+  Assessment,
+  TrendingUp,
+} from '@mui/icons-material';
+import CreateMonitoringModal from './CreateMonitoringModal';
+// import CreateMonitoringModal from './CreateMonitoringModal';
 
-import Backend from 'services/backend';
-import PlanTable from './PlanTable';
-import GetToken from 'utils/auth-token';
-import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
-
-const UnitTable = ({ units, fiscalYear }) => {
+const UnitTable = ({ units, onUpdate }) => {
   const theme = useTheme();
-  const navigate = useNavigate();
+  const [expandedRows, setExpandedRows] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedKeyResult, setSelectedKeyResult] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState(null);
 
-  const [selectedRow, setSelectedRow] = useState(null);
+  const handleRowClick = (unitId) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [unitId]: !prev[unitId],
+    }));
+  };
 
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
-  const [error, setError] = useState(false);
+  const handleMonitorClick = (keyResult, unit) => {
+    setSelectedKeyResult(keyResult);
+    setSelectedUnit(unit);
+    setModalOpen(true);
+  };
 
-  const handleRowClick = (index, unitId) => {
-    if (selectedRow === unitId) {
-      setSelectedRow(null);
-    } else {
-      setSelectedRow(unitId);
-      handleFetchingUnitPlan(unitId);
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedKeyResult(null);
+    setSelectedUnit(null);
+  };
+
+  const handleSuccess = () => {
+    if (onUpdate) {
+      onUpdate();
     }
   };
-const handleFetchingUnitPlan = async (unitId) => {
-  setLoading(true);
-  try {
-    const token = await GetToken();
-    const Api = `${Backend.api}${Backend.unpaginatedUnitPlan}/${unitId}?fiscal_year_id=${fiscalYear}`;
-    const header = {
-      Authorization: `Bearer ${token}`,
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
 
-    const response = await fetch(Api, { method: 'GET', headers: header });
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
-    if (data.success) {
-      setData(data.data.data || []);
-      setError(false);
-    } else {
-      setError(true);
-      toast.warning(data.data?.message || 'Something went wrong');
-    }
-  } catch (error) {
-    setError(true);
-    toast.warning(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  const calculateOverallProgress = (keyResults) => {
+    if (!keyResults || keyResults.length === 0) return 0;
+    const totalProgress = keyResults.reduce(
+      (sum, kr) => sum + (kr.progress || 0),
+      0,
+    );
+    return Math.round(totalProgress / keyResults.length);
+  };
+
+  const getProgressColor = (progress) => {
+    if (progress >= 75) return theme.palette.success.main;
+    if (progress >= 50) return theme.palette.warning.main;
+    return theme.palette.primary.main;
+  };
 
   return (
-    <TableContainer component={Paper} sx={{ minHeight: '66dvh', border: 0.4, borderColor: theme.palette.divider, borderRadius: 2 }}>
-      <Table sx={{ minWidth: 650 }} aria-label="Organization unit table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Unit name</TableCell>
-            <TableCell>Unit Manager</TableCell>
-            <TableCell>Unit Type</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {units?.map((unit, index) => (
-            <React.Fragment key={unit.id}>
-              <TableRow
-                sx={{
-                  backgroundColor: selectedRow == unit?.id ? theme.palette.grey[100] : theme.palette.background.default,
-                  ':hover': {
-                    backgroundColor: theme.palette.grey[100],
-                    color: theme.palette.background.default,
-                    cursor: 'pointer',
-                    borderRadius: 2
-                  }
-                }}
-              >
-                <TableCell sx={{ display: 'flex', alignItems: 'center', border: 0 }}>
-                  <IconButton aria-label="expand row" size="small" onClick={() => handleRowClick(index, unit.id)}>
-                    {selectedRow === unit?.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                  </IconButton>
-
-                  <Typography
-                    variant="subtitle1"
-                    color={theme.palette.text.primary}
-                    // onClick={() => navigate('/units/view', { state: unit })}
-                    // sx={{ ':hover': { color: theme.palette.primary[800] }, ml: 1 }}
-                  >
-                    {unit?.name}
+    <>
+      <TableContainer
+        component={Paper}
+        sx={{
+          minHeight: '66dvh',
+          border: 0.4,
+          borderColor: theme.palette.divider,
+          borderRadius: 2,
+        }}
+      >
+        <Table sx={{ minWidth: 650 }} aria-label="Units table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Unit Details</TableCell>
+              <TableCell>Unit Type</TableCell>
+              <TableCell>Total Key Results</TableCell>
+              <TableCell>Overall Progress</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Array.isArray(units) && units.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body1" color="textSecondary">
+                    No units found
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ border: 0 }}>
-                  {unit?.manager} 
-                </TableCell>
-                <TableCell sx={{ border: 0 }}>{unit?.unit_type}</TableCell>
-                <TableCell sx={{ border: 0 }}>
-                  <Button variant="text" onClick={() => handleRowClick(index, unit.id)}>
-                    View
-                  </Button>
+              </TableRow>
+            ) : Array.isArray(units) ? (
+              units.map((item) => (
+                <React.Fragment key={item.id}>
+                  {/* Main Row - Unit Details */}
+                  <TableRow
+                    sx={{
+                      backgroundColor: expandedRows[item.id]
+                        ? theme.palette.grey[50]
+                        : 'inherit',
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                      },
+                    }}
+                  >
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <IconButton
+                          aria-label="expand row"
+                          size="small"
+                          onClick={() => handleRowClick(item.id)}
+                        >
+                          {expandedRows[item.id] ? (
+                            <KeyboardArrowUp />
+                          ) : (
+                            <KeyboardArrowDown />
+                          )}
+                        </IconButton>
+                        <Box sx={{ ml: 2 }}>
+                          <Typography variant="body1" fontWeight="bold">
+                            {item.unit?.name || 'Unnamed Unit'}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            Created: {formatDate(item.unit?.created_at)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                        icon={<Business />}
+                        label={item.unit?.unit_type?.name || 'No Type'}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                        icon={<Assessment />}
+                        label={`${item.key_results?.length || 0} Key Results`}
+                        size="small"
+                        color="secondary"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
+                        <Typography variant="body2" fontWeight="medium">
+                          {calculateOverallProgress(item.key_results)}%
+                        </Typography>
+                        <LinearProgress
+                          variant="determinate"
+                          value={calculateOverallProgress(item.key_results)}
+                          sx={{
+                            flexGrow: 1,
+                            height: 8,
+                            borderRadius: 1,
+                            backgroundColor: theme.palette.grey[200],
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: getProgressColor(
+                                calculateOverallProgress(item.key_results),
+                              ),
+                            },
+                          }}
+                        />
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleRowClick(item.id)}
+                        startIcon={
+                          expandedRows[item.id] ? (
+                            <KeyboardArrowUp />
+                          ) : (
+                            <KeyboardArrowDown />
+                          )
+                        }
+                      >
+                        {expandedRows[item.id] ? 'Hide' : 'View'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Expanded Row - Key Results List */}
+                  {expandedRows[item.id] &&
+                    item.key_results &&
+                    item.key_results.length > 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          sx={{
+                            py: 3,
+                            backgroundColor: theme.palette.grey[50],
+                          }}
+                        >
+                          <Collapse
+                            in={expandedRows[item.id]}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            <Box sx={{ pl: 6, pr: 2 }}>
+                              <Stack spacing={1}>
+                                {item.key_results.map((keyResult, index) => (
+                                  <Paper
+                                    key={keyResult.assignment_id || index}
+                                    sx={{
+                                      p: 2,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      backgroundColor: 'white',
+                                      border: `1px solid ${theme.palette.divider}`,
+                                      borderRadius: 1,
+                                      '&:hover': {
+                                        backgroundColor:
+                                          theme.palette.action.hover,
+                                      },
+                                    }}
+                                  >
+                                    <Box sx={{ flexGrow: 1 }}>
+                                      <Typography
+                                        variant="body1"
+                                        fontWeight="medium"
+                                        gutterBottom
+                                      >
+                                        {keyResult.key_result?.title ||
+                                          'Untitled Key Result'}
+                                      </Typography>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 2,
+                                        }}
+                                      >
+                                        <Chip
+                                          label={`Progress: ${keyResult.progress}%`}
+                                          size="small"
+                                          sx={{
+                                            backgroundColor: getProgressColor(
+                                              keyResult.progress,
+                                            ),
+                                            color: 'white',
+                                          }}
+                                        />
+                                        {/* <Typography
+                                          variant="caption"
+                                          color="textSecondary"
+                                        >
+                                          Assignment ID:{' '}
+                                          {keyResult.assignment_id?.slice(-8) ||
+                                            'N/A'}
+                                        </Typography> */}
+                                      </Box>
+                                    </Box>
+
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      onClick={() =>
+                                        handleMonitorClick(keyResult, item.unit)
+                                      }
+                                      startIcon={<TrendingUp />}
+                                      sx={{ ml: 2 }}
+                                    >
+                                      Monitor
+                                    </Button>
+                                  </Paper>
+                                ))}
+                              </Stack>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    )}
+
+                  {/* Expanded Row - No Key Results */}
+                  {expandedRows[item.id] &&
+                    (!item.key_results || item.key_results.length === 0) && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          sx={{
+                            py: 3,
+                            backgroundColor: theme.palette.grey[50],
+                          }}
+                        >
+                          <Collapse
+                            in={expandedRows[item.id]}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            <Box sx={{ pl: 6, textAlign: 'center', py: 4 }}>
+                              <Assessment
+                                sx={{
+                                  fontSize: 48,
+                                  color: 'text.secondary',
+                                  mb: 2,
+                                }}
+                              />
+                              <Typography
+                                variant="body1"
+                                color="textSecondary"
+                                gutterBottom
+                              >
+                                No key results assigned to this unit
+                              </Typography>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                sx={{ mt: 1 }}
+                              >
+                                Assign Key Results
+                              </Button>
+                            </Box>
+                          </Collapse>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                </React.Fragment>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body1" color="error">
+                    Invalid data format
+                  </Typography>
                 </TableCell>
               </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-              {selectedRow == unit?.id && (
-                <TableRow sx={{ border: 0 }}>
-                  <TableCell colSpan={7}>
-                    <Collapse in={selectedRow !== null} timeout="auto" unmountOnExit>
-                      {loading ? (
-                        <TableRow sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 4 }}>
-                          <TableCell colSpan={7} sx={{ border: 0 }}>
-                            <ActivityIndicator size={20} />
-                          </TableCell>
-                        </TableRow>
-                      ) : error ? (
-                        <TableRow sx={{ padding: 4 }}>
-                          <TableCell colSpan={7} sx={{ border: 0 }}>
-                            <Typography variant="body2">There is error fetching the unit target</Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : data.length === 0 ? (
-                        <TableRow sx={{ padding: 4 }}>
-                          <TableCell colSpan={7} sx={{ border: 0 }}>
-                            <Typography variant="body2">There is no target found</Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} sx={{ width: '100%', border: 0 }}>
-                            <PlanTable
-                              plans={data}
-                              unitName={unit?.name}
-                              unitType={unit?.unit_type}
-                              fiscalYear={fiscalYear}
-                              page="evaluation"
-                              hideActions={true}
-                              onRefresh={() => handleFetchingUnitPlan(selectedRow)}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </Collapse>
-                  </TableCell>
-                </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+      {/* Create Monitoring Modal */}
+      <CreateMonitoringModal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        keyResult={selectedKeyResult}
+        unit={selectedUnit}
+        onSuccess={handleSuccess}
+      />
+    </>
   );
 };
 

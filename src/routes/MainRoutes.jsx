@@ -12,13 +12,11 @@ const MyUnits = Loadable(lazy(() => import('views/units/my_units')));
 const MyChildUnit = Loadable(lazy(() => import('views/my-child-unit')));
 const Company = Loadable(lazy(() => import('views/company/index')));
 
-
 const PendingTasks = Loadable(lazy(() => import('views/todo/pending-tasks')));
 const UnitPlan = Loadable(lazy(() => import('views/my-child-unit/UnitPlan')));
 const ViewUnit = Loadable(lazy(() => import('views/units/view')));
 const Planning = Loadable(lazy(() => import('views/plan')));
 const KeyResult = Loadable(lazy(() => import('views/key_results')));
-
 
 const PlanDetail = Loadable(lazy(() => import('views/plan/planDetail')));
 const FeedBacks = Loadable(lazy(() => import('views/feedbacks')));
@@ -26,10 +24,10 @@ const Objectives = Loadable(lazy(() => import('views/objective')));
 const Initiative = Loadable(lazy(() => import('views/initiatives')));
 const DiskReport = Loadable(lazy(() => import('views/disk-reporting')));
 const ActivityType = Loadable(lazy(() => import('views/activity-type')));
-const PlanningStatus = Loadable(
-  lazy(() => import('views/plan/plan-status')),
+const PlanningStatus = Loadable(lazy(() => import('views/plan/plan-status')));
+const MyTeamPlanReport = Loadable(
+  lazy(() => import('views/my-teams-report/index')),
 );
-const MyTeamPlanReport = Loadable(lazy(() => import('views/my-teams-report/index')));
 
 const TaskStatus = Loadable(lazy(() => import('views/my-teams/task-status')));
 const Employees = Loadable(lazy(() => import('views/employees')));
@@ -149,7 +147,7 @@ const MainRoutes = {
         </Protected>
       ),
     },
- {
+    {
       path: 'account',
       element: (
         <Protected>
@@ -182,7 +180,7 @@ const MainRoutes = {
         </Protected>
       ),
     },
- {
+    {
       path: 'desk-report',
       element: (
         <Protected>
@@ -245,7 +243,7 @@ const MainRoutes = {
       path: 'key-result',
       element: (
         <Protected>
-          <KeyResult  />
+          <KeyResult />
         </Protected>
       ),
     },
@@ -271,15 +269,15 @@ const MainRoutes = {
       path: 'my-child-unit',
       element: (
         <Protected>
-          <MyChildUnit/>
+          <MyChildUnit />
         </Protected>
       ),
     },
-       {
+    {
       path: 'my-child-main-activities',
       element: (
         <Protected>
-          <MyChildUnit/>
+          <MyChildUnit />
         </Protected>
       ),
     },
@@ -287,7 +285,7 @@ const MainRoutes = {
       path: 'company',
       element: (
         <Protected>
-          <Company/>
+          <Company />
         </Protected>
       ),
     },
@@ -295,7 +293,7 @@ const MainRoutes = {
       path: 'pending-tasks',
       element: (
         <Protected>
-          <PendingTasks/>
+          <PendingTasks />
         </Protected>
       ),
     },
@@ -307,7 +305,7 @@ const MainRoutes = {
         </Protected>
       ),
     },
-    
+
     {
       path: 'feedbacks',
       element: (
@@ -556,13 +554,14 @@ const MainRoutes = {
         </Protected>
       ),
     },
-    { path: 'main-activities',
-    element: (
-      <Protected>
-        <MainActivities />
-      </Protected>
-    ),
-  },
+    {
+      path: 'main-activities',
+      element: (
+        <Protected>
+          <MainActivities />
+        </Protected>
+      ),
+    },
     {
       path: 'perspectives',
       element: (
@@ -684,6 +683,15 @@ const MainRoutes = {
         </Protected>
       ),
     },
+    {
+      path: 'main-activity',
+      element: (
+        <Protected>
+          <Planning />
+        </Protected>
+      ),
+    },
+
     {
       path: '/*',
       element: <NotFound />,

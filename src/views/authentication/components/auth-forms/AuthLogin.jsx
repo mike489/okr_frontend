@@ -28,10 +28,8 @@ import * as Yup from 'yup';
 import { handleGettingManagerUnits } from 'utils/multiple-unit-manager';
 import StoreUserUnit from 'utils/set-user-unit';
 
-
 const RAW_API_URL = import.meta.env.VITE_AUTH_URL || '';
-const API_URL = RAW_API_URL.replace(/\/+$/, ''); 
-
+const API_URL = RAW_API_URL.replace(/\/+$/, '');
 
 const getTenantFromUrl = () => {
   const hostname = window.location.hostname;
@@ -93,7 +91,7 @@ const AuthLogin = ({ ...others }) => {
       setSigning(true);
 
       const url = `${getBackendBaseUrl()}/login`;
-      console.log("🔵 LOGIN URL:", url);
+      console.log('🔵 LOGIN URL:', url);
 
       const res = await fetch(url, {
         method: 'POST',
@@ -155,7 +153,14 @@ const AuthLogin = ({ ...others }) => {
   // ===============================
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <ActivityIndicator size={50} />
       </Box>
     );
@@ -163,7 +168,15 @@ const AuthLogin = ({ ...others }) => {
 
   if (error) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 3,
+        }}
+      >
         <Box sx={{ maxWidth: 500, textAlign: 'center' }}>
           <Typography variant="h5" color="error" gutterBottom>
             Invalid Company Link

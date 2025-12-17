@@ -46,7 +46,9 @@ const generateMonthOptions = (startDate, fiscalYear) => {
 
   // Fallback to current year's January 1 if start is invalid
   if (!start || isNaN(start)) {
-    console.warn('Invalid startDate or fiscalYear, using current year January 1');
+    console.warn(
+      'Invalid startDate or fiscalYear, using current year January 1',
+    );
     start = new Date(currentDate.getFullYear(), 0, 1);
   }
 
@@ -101,8 +103,8 @@ export const MonitorModal = ({
     monthOptions.includes(currentMonth) && !activeMonth
       ? currentMonth
       : activeMonth && monthOptions.includes(activeMonth)
-      ? activeMonth
-      : monthOptions[0] || '';
+        ? activeMonth
+        : monthOptions[0] || '';
 
   const formik = useFormik({
     initialValues: {
@@ -251,7 +253,10 @@ MonitorModal.propTypes = {
   activeMonth: PropTypes.string,
   currentValue: PropTypes.string,
   fiscalYear: PropTypes.string,
-  startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  startDate: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.instanceOf(Date),
+  ]),
   onClose: PropTypes.func,
   handleSubmission: PropTypes.func,
 };

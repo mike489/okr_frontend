@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  FormControl,
-  FormHelperText,
-  Grid,
-  InputLabel,
-  OutlinedInput,
-  TablePagination,
-} from '@mui/material';
-import CreatePlan from './components/CreatePlan';
+import { Box, Grid, TablePagination } from '@mui/material';
+// import CreateObjective from './components/CreateObjective'; /
 import { toast, ToastContainer } from 'react-toastify';
 import { gridSpacing } from 'store/constant';
-import { UpdatePlan } from './components/UpdatePlan';
+// import { UpdateObjective } from './components/UpdateObjective'; \
 import { useKPI } from 'context/KPIProvider';
 import { useSelector } from 'react-redux';
 import Backend from 'services/backend';
@@ -23,145 +15,38 @@ import DeletePrompt from 'ui-component/modal/DeletePrompt';
 import GetToken from 'utils/auth-token';
 import Search from 'ui-component/search';
 import hasPermission from 'utils/auth/hasPermission';
-import PlanStatusNotice from './components/PlanStatusNotice';
-import * as Yup from 'yup';
-
 import SplitButton from 'ui-component/buttons/SplitButton';
-import InitiativeList from './components/InitiativeList';
+// import ObjectiveList from './components/ObjectiveList'; // Renamed
+import * as Yup from 'yup';
+import ObjectiveList from './ObjectiveList';
+import CreatePlan from './components/CreatePlancopy';
 
-const AddUnitOptions = ['Add Unit Plan', 'Import From Excel'];
 const Plan = () => {
   const selectedYear = useSelector(
     (state) => state.customization.selectedFiscalYear,
   );
 
-  const years = useSelector((state) => state.customization.fiscalYears);
-  const { handleUpdatePlan } = useKPI();
+  const { handleUpdateObjective } = useKPI(); // Changed
 
-  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(false);
-  const [allowedStatus, setAllowedState] = useState([]);
+  const [units, setUnits] = useState([]);
   const [create, setCreate] = useState(false);
-  const [myPlan, setMyPlan] = useState([]);
-  const [planStatus, setPlanStatus] = useState('');
-
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedObjective, setSelectedObjective] = useState(null); // Changed
   const [update, setUpdate] = useState(false);
-  const [selectedPlanID, setSelectedPlanID] = useState(null);
-  const [deletePlan, setDeletePlan] = useState(false);
+  const [selectedObjectiveID, setSelectedObjectiveID] = useState(null); // Changed
+  const [deleteObjective, setDeleteObjective] = useState(false); // Changed
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState('');
-  const [units, setUnits] = useState([]);
-  const [perspectiveTypes] = useState([
-    { label: 'All Perspectives', value: '' },
-  ]);
-  const [measuringUnit] = useState([
-    { label: 'All Measuring Units', value: '' },
-  ]);
-  const [filter, setFilter] = useState({
-    m_unit: '',
-    perspective: '',
-  });
+  const [keyResults, setKeyResults] = useState([]);
+
   const [pagination, setPagination] = useState({
     page: 0,
     per_page: 10,
     total: 0,
   });
-
-  const [actionInfo, setActionInfo] = useState({
-    openModal: false,
-    title: 'Change Status',
-    action: '',
-    submitting: false,
-  });
-
-  console.log('Units', units);
-  console.log('My Plan', myPlan);
-  const handleFetchingUnits = async () => {
-    const token = await GetToken();
-    const Api = Backend.api + Backend.getMyChildUnits;
-    // `?fiscal_year_id=${selectedYear?.id}&page=${pagination.page + 1}&per_page=${pagination.per_page}`;
-
-    const header = {
-      Authorization: `Bearer ${token}`,
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    fetch(Api, {
-      method: 'GET',
-      headers: header,
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.success) {
-          setUnits(response.data);
-        }
-      })
-      .catch((error) => {
-        toast.warning(error.message);
-      });
-  };
-
-  const handleOpenModal = (title, action) => {
-    setActionInfo((PrevState) => ({
-      ...PrevState,
-      openModal: true,
-      title: title,
-      action: action,
-    }));
-  };
-  const handlePlanAddition = async (value) => {
-    setIsCreating(true);
-    const token = await GetToken();
-    const Api = Backend.api + Backend.plans;
-
-    const header = {
-      Authorization: `Bearer ${token}`,
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
-
-    try {
-      // Use the payload as received from CreatePlan
-      const data = {
-        plans: value.plans, // Array of { id, months }
-        unit_id: value.unit_id,
-        fiscal_year_id: value.fiscal_year_id,
-      };
-
-      console.log('Sending payload:', JSON.stringify(data, null, 2)); // Debug
-
-      const response = await fetch(Api, {
-        method: 'POST',
-        headers: header,
-        body: JSON.stringify(data),
-      }).then((res) => res.json());
-
-      if (response?.success) {
-        toast.success(response?.data?.message || 'Plan created successfully.');
-        handleCreateModalClose();
-        handleFetchingPlan();
-      } else {
-        toast.error(response?.data?.message || 'Failed to create plan.');
-      }
-    } catch (error) {
-      toast.error(error.message || 'An unexpected error occurred.');
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setActionInfo((PrevState) => ({
-      ...PrevState,
-      openModal: false,
-      action: '',
-    }));
-  };
 
   const handleSearchFieldChange = (event) => {
     const value = event.target.value;
@@ -177,9 +62,8 @@ const Plan = () => {
     setPagination({ ...pagination, per_page: event.target.value, page: 0 });
   };
 
-  const handleCreatePlan = () => {
+  const handleCreateObjective = () => {
     setCreate(true);
-    // setIsCreating(true);
   };
 
   const handleCreateModalClose = () => {
@@ -187,16 +71,131 @@ const Plan = () => {
   };
 
   const handleUpdateModalClose = () => {
-    handleUpdatePlan([]);
+    handleUpdateObjective([]);
     setUpdate(false);
-    setSelectedPlanID(null);
+    setSelectedObjectiveID(null);
+  };
+
+  // const handleObjectiveAddition = async (value) => {
+  //   setIsCreating(true);
+  //   const token = await GetToken();
+  //   const Api = Backend.api + Backend.okrAssignmentDistribute;
+
+  //   const header = {
+  //     Authorization: `Bearer ${token}`,
+  //     accept: 'application/json',
+  //     'Content-Type': 'application/json',
+  //   };
+
+  //   try {
+  //     const data = {
+  //       plans: value.plans,
+  //       unit_id: value.unit_id,
+  //     };
+
+  //     console.log('Sending payload:', JSON.stringify(data, null, 2)); // Debug
+
+  //     const response = await fetch(Api, {
+  //       method: 'POST',
+  //       headers: header,
+  //       body: JSON.stringify(data),
+  //     }).then((res) => res.json());
+
+  //     if (response?.success) {
+  //       toast.success(response?.data?.message || 'Plan created successfully.');
+  //       handleCreateModalClose();
+  //     } else {
+  //       toast.error(response?.data?.message || 'Failed to create plan.');
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.message || 'An unexpected error occurred.');
+  //   } finally {
+  //     setIsCreating(false);
+  //   }
+  // };
+
+  const handleObjectiveAddition = async (value) => {
+    setIsCreating(true);
+    const token = await GetToken();
+    const Api = Backend.pmsUrl(Backend.okrDistribute);
+
+    const header = {
+      Authorization: `Bearer ${token}`,
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const data = {
+        assigned_to: value.unit_id, // Changed from value.assigned_to to value.unit_id
+        key_results: value.plans.map((plan) => ({
+          id: plan.id,
+          months: plan.months.map((month) => ({
+            month_name: month.month_name,
+            target: month.target,
+          })),
+        })),
+        notes: value.notes || 'Increase sales by 10%',
+      };
+
+      console.log('Sending payload:', JSON.stringify(data, null, 2));
+
+      const response = await fetch(Api, {
+        method: 'POST',
+        headers: header,
+        body: JSON.stringify(data),
+      }).then((res) => res.json());
+
+      if (response?.success) {
+        toast.success(
+          response?.data?.message || 'Objective assigned successfully.',
+        );
+        handleCreateModalClose();
+        handleFetchingObjectives(); // Refresh the list
+      } else {
+        toast.error(response?.data?.message || 'Failed to assign objective.');
+      }
+    } catch (error) {
+      toast.error(error.message || 'An unexpected error occurred.');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleFetchingUnits = async () => {
+    const token = await GetToken();
+    const Api =
+      Backend.pmsUrl(Backend.myUnits) +
+      `?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
+
+    const header = {
+      Authorization: `Bearer ${token}`,
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    fetch(Api, {
+      method: 'GET',
+      headers: header,
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        if (response.success) {
+          // Fix: Extract the data array from the paginated response
+          setUnits(response.data.data || []); // Changed from response.data to response.data.data
+        }
+      })
+      .catch((error) => {
+        toast.warning(error.message);
+      });
   };
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
       const token = await GetToken();
-      const Api = Backend.api + Backend.deletePlan + `/${selectedPlan?.id}`;
+      const Api =
+        Backend.api + Backend.deleteObjective + `/${selectedObjective?.id}`;
       fetch(Api, {
         method: 'DELETE',
         headers: {
@@ -207,9 +206,9 @@ const Plan = () => {
         .then((response) => response.json())
         .then((response) => {
           if (response.success) {
-            setDeletePlan(false);
+            setDeleteObjective(false);
             toast.success(response.data.message);
-            handleFetchingPlan();
+            handleFetchingObjectives();
           } else {
             toast.info(response.data.message);
           }
@@ -220,135 +219,163 @@ const Plan = () => {
       setDeleting(false);
     }
   };
-  const handlePlanAdd = (index) => {
+
+  const handleObjectiveAdd = (index) => {
     if (index === 0) {
-      handleCreatePlan();
+      handleCreateObjective();
     } else if (index === 1) {
-      handleOpenDialog();
-    } else {
-      alert('We will be implement importing from odoo');
+      // Import from Excel functionality
     }
   };
 
-  const handleOpenDialog = () => {
-    setImportExcel(true);
-  };
+  // UPDATED: Fetch objectives instead of plans
+  // const handleFetchingObjectives = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const token = await GetToken();
 
-  const handleFetchingPlan = async () => {
+  //     const queryParams = new URLSearchParams({
+  //       page: pagination.page + 1,
+  //       per_page: pagination.per_page,
+  //     });
+
+  //     // if (selectedYear?.id) {
+  //     //   queryParams.append('fiscal_year_id', selectedYear.id);
+  //     // }
+
+  //     // Changed from Backend.myPlansPaginated to Backend.objectives
+  //     const Api = `${Backend.api}${Backend.objectives}?${queryParams.toString()}`;
+  //     console.log('📡 Fetching objectives with URL:', Api);
+
+  //     const res = await fetch(Api, {
+  //       method: 'GET',
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         Accept: 'application/json',
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     const response = await res.json();
+  //     console.log('✅ API Response:', response);
+
+  //     if (response.success && response.data) {
+  //       const paginationData = response.data;
+  //       setData(paginationData.data || []);
+  //       setPagination((prev) => ({
+  //         ...prev,
+  //         page: paginationData.current_page - 1,
+  //         per_page: paginationData.per_page,
+  //         total: paginationData.total || 0,
+  //       }));
+  //       setError(false);
+  //     } else {
+  //       toast.warning(response?.data?.message || 'Failed to fetch objectives');
+  //       setError(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('❌ Fetch Error:', error);
+  //     toast.warning(error.message);
+  //     setError(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleFetchingObjectives = async () => {
+    setLoading(true);
+    const token = await GetToken();
+    const Api =
+      Backend.pmsUrl(Backend.objectives) +
+      `?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
+
     try {
-      setLoading(true);
-      const token = await GetToken();
-
-      const queryParams = new URLSearchParams({
-        page: pagination.page + 1, // backend pages start at 1
-        per_page: pagination.per_page,
-      });
-
-      if (selectedYear?.id) {
-        queryParams.append('fiscal_year_id', selectedYear.id);
-      }
-
-      const Api = `${Backend.api}${Backend.myPlansPaginated}?${queryParams.toString()}`;
-      console.log('📡 Fetching plans with URL:', Api);
-
-      const res = await fetch(Api, {
+      const response = await fetch(Api, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
       });
+      const responseData = await response.json();
 
-      const response = await res.json();
-      console.log('✅ API Response:', response);
-
-      if (response.success && response.data) {
-        const paginationData = response.data;
-        setData(paginationData.data || []);
-        setPagination((prev) => ({
-          ...prev,
-          page: paginationData.current_page - 1, // convert back to zero-based
-          per_page: paginationData.per_page,
-          total: paginationData.total || 0,
-        }));
-        setError(false);
+      if (responseData.success) {
+        setData(responseData.data.data);
+        setPagination({
+          ...pagination,
+          last_page: responseData.data.last_page,
+          total: responseData.data.total,
+        });
       } else {
-        toast.warning(response?.data?.message || 'Failed to fetch plans');
-        setError(false);
+        toast.error(responseData.message || 'Failed to fetch objectives');
       }
     } catch (error) {
-      console.error('❌ Fetch Error:', error);
-      toast.warning(error.message);
+      toast.error(error.message || 'Failed to fetch objectives');
       setError(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Fetch user's main activities (also filtered by fiscal year)
-  const handleMyMainActivities = async () => {
+  const handleFetchKeyResults = async () => {
+    // if (!selectedObjective) return setKeyResults([]);
+    setLoading(true);
     try {
-      setActionInfo((prev) => ({ ...prev, submitting: true }));
       const token = await GetToken();
-
-      const queryParams = new URLSearchParams();
-      if (selectedYear?.id)
-        queryParams.append('fiscal_year_id', selectedYear.id);
-
-      const Api = `${Backend.api}${Backend.myPlans}?${queryParams.toString()}`;
-      console.log('📡 Fetching my main activities with URL:', Api);
-
-      const response = await fetch(Api, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
+      const params = new URLSearchParams({
+        page: pagination.page + 1,
+        per_page: pagination.per_page,
       });
-
-      const result = await response.json();
-      console.log('✅ My Main Activities Response:', result);
-
-      if (result.success) {
-        setMyPlan(result.data || []);
-        // handleFetchingPlan(); ❌ Remove this duplicate call
-      } else {
-        toast.error(result?.data?.message || 'Failed to fetch plan');
-      }
-    } catch (error) {
-      console.error('❌ Fetch Error:', error);
-      toast.error(error?.message || 'Something went wrong');
+      if (search) params.append('search', search);
+      const res = await fetch(
+        Backend.pmsUrl(Backend.keyResults) + '?' + params.toString(),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+          },
+        },
+      );
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setKeyResults(data.data.data || []);
+        setPagination((prev) => ({
+          ...prev,
+          last_page: data.data.last_page,
+          total: data.data.total,
+        }));
+      } else toast.error(data.message || 'Failed to load key results');
+    } catch (err) {
+      toast.error(err.message);
     } finally {
-      setActionInfo((prev) => ({ ...prev, submitting: false }));
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (selectedYear?.id) {
-      handleFetchingPlan();
-      handleFetchingUnits();
-      handleMyMainActivities();
-    }
+    // if (selectedYear?.id) {
+    //   handleFetchingObjectives();
+    // }
+    handleFetchingObjectives();
+    handleFetchingUnits();
+    handleFetchKeyResults();
   }, [selectedYear?.id, pagination.page, pagination.per_page]);
 
-  const groupedPlans = [];
-
-  data?.forEach((plan) => {
-    const perspectiveType = plan?.kpi?.perspective_type?.name;
-
-    if (perspectiveType) {
-      if (!groupedPlans[perspectiveType]) {
-        groupedPlans[perspectiveType] = [];
-      }
-      groupedPlans[perspectiveType].push(plan);
-    }
+  // Filter data based on search
+  const filteredData = data.filter((objective) => {
+    if (!search) return true;
+    const searchLower = search.toLowerCase();
+    return (
+      objective.title?.toLowerCase().includes(searchLower) ||
+      objective.description?.toLowerCase().includes(searchLower) ||
+      objective.type?.toLowerCase().includes(searchLower)
+    );
   });
 
   return (
     <PageContainer
-      title={'My Main Activities'}
+      title={'Objectives & Key Results'}
       searchField={
         <Search
           value={search}
@@ -356,51 +383,16 @@ const Plan = () => {
         />
       }
       rightOption={
-        hasPermission('create:plan') && (
-          <Box
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            gap={2} // Optional spacing
-          >
-            {/* <SplitButton
-              options={AddUnitOptions}
-              handleSelection={(value) => handlePlanAdd(value)}
-            /> */}
-            <SplitButton
-              options={['Distribute']}
-              handleSelection={(value) => handlePlanAdd(value)}
-            />
-          </Box>
-        )
+        // hasPermission('create:objective') && (
+        <Box display="flex" flexDirection="row" alignItems="center" gap={2}>
+          <SplitButton
+            options={['Distribute']}
+            handleSelection={(value) => handleObjectiveAdd(value)}
+          />
+        </Box>
+        // )
       }
     >
-      {allowedStatus?.length > 0 && (
-        <PlanStatusNotice
-          status={planStatus}
-          changingStatus={actionInfo.submitting}
-          onAccept={
-            allowedStatus.includes('accepted')
-              ? () => handleOpenModal('Accepting', 'accepted')
-              : null
-          }
-          onOpenToDiscussion={
-            allowedStatus.includes('open for discussion')
-              ? () =>
-                  handleOpenModal(
-                    'Opening for discussion',
-                    'open for discussion',
-                  )
-              : null
-          }
-          onEsclate={
-            allowedStatus.includes('escalated')
-              ? () => handleOpenModal('Esclating', 'escalated')
-              : null
-          }
-        />
-      )}
-
       {loading ? (
         <Grid container>
           <Grid
@@ -420,13 +412,13 @@ const Plan = () => {
       ) : error ? (
         <Fallbacks
           title="Data not found"
-          description="Unable find the My Plan"
+          description="Unable to find objectives"
         />
-      ) : data?.length === 0 ? (
+      ) : filteredData?.length === 0 ? (
         <Fallbacks
-          severity="My Plan"
-          title="My Plan is not found"
-          description="The list of added plan will be listed here"
+          severity="Objectives"
+          title="No objectives found"
+          description="The list of objectives will be displayed here"
           sx={{ paddingTop: 6 }}
         />
       ) : (
@@ -440,7 +432,17 @@ const Plan = () => {
           spacing={gridSpacing}
         >
           <Grid container>
-            <InitiativeList data={data} />
+            <ObjectiveList
+              data={filteredData}
+              onEdit={(objective) => {
+                setSelectedObjectiveID(objective.id);
+                setUpdate(true);
+              }}
+              onDelete={(objective) => {
+                setSelectedObjective(objective);
+                setDeleteObjective(true);
+              }}
+            />
           </Grid>
         </Grid>
       )}
@@ -452,47 +454,40 @@ const Plan = () => {
         rowsPerPage={pagination.per_page}
         page={pagination.page}
         onPageChange={handleChangePage}
-        onRowsPerPageChange={(event) => {
-          setPagination((prev) => ({
-            ...prev,
-            per_page: parseInt(event.target.value, 10),
-            page: 0,
-          }));
-        }}
-        labelRowsPerPage="Plans per page"
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Objectives per page"
       />
 
       <CreatePlan
         create={create}
         isCreating={isCreating}
-        unit={units}
-        activities={myPlan}
+        unit={units.data || []}
+        keyResults={keyResults}
+        // activities={data}
         fiscalYearId={selectedYear?.id}
         onClose={handleCreateModalClose}
-        handleSubmission={(value) => handlePlanAddition(value)}
+        handleSubmission={(value) => handleObjectiveAddition(value)}
       />
 
-      {selectedPlanID && (
-        <UpdatePlan
+      {/* {selectedObjectiveID && (
+        <UpdateObjective
           add={update}
-          plan_id={selectedPlanID}
+          objective_id={selectedObjectiveID}
           onClose={handleUpdateModalClose}
-          onSucceed={() => handleFetchingPlan()}
+          onSucceed={() => handleFetchingObjectives()}
           isUpdate={true}
         />
-      )}
-      {deletePlan && (
+      )} */}
+      {deleteObjective && (
         <DeletePrompt
           type="Delete"
-          open={deletePlan}
-          title="Deleting Plan"
-          description={
-            `Are you sure you want to delete ` + selectedPlan?.kpi?.name
-          }
-          onNo={() => setDeletePlan(false)}
+          open={deleteObjective}
+          title="Deleting Objective"
+          description={`Are you sure you want to delete "${selectedObjective?.title}"?`}
+          onNo={() => setDeleteObjective(false)}
           onYes={() => handleDelete()}
           deleting={deleting}
-          handleClose={() => setDeletePlan(false)}
+          handleClose={() => setDeleteObjective(false)}
         />
       )}
       <ToastContainer />

@@ -26,6 +26,7 @@ import {
   IconUserCircle,
   IconGraphFilled,
   IconDisc,
+  IconTarget,
 } from '@tabler/icons-react';
 
 const icons = {
@@ -56,6 +57,7 @@ const icons = {
   IconUserCircle,
   IconGraphFilled,
   IconDisc,
+  IconTarget,
 };
 import getRolesAndPermissionsFromToken from 'utils/auth/getRolesAndPermissionsFromToken';
 
@@ -77,7 +79,10 @@ export const dashboard = () => {
     'read:task_status',
     'read:task',
     'read:myteams',
+
     'read_key_result',
+    'read_okr_cycle',
+
     // 'read:pendingtask',
     // 'read:monitoring',
     'read:evaluation',
@@ -97,7 +102,8 @@ export const dashboard = () => {
     'read:myteamplanreport',
     'read:reporting',
     'read:activitytype',
-
+    'read_okr_cycle',
+    'read_unit_type',
   ];
 
   const permissionMap = {
@@ -108,7 +114,7 @@ export const dashboard = () => {
       icon: icons.IconKey,
     },
 
-    'read_objective': {
+    read_objective: {
       id: 'objective',
       title: 'Objective',
       url: '/objective',
@@ -128,11 +134,19 @@ export const dashboard = () => {
       url: '/measuring-units',
       icon: icons.IconRulerMeasure,
     },
-    'read_key_result': {
+
+    read_key_result: {
       id: 'key-result',
       title: 'Key Result',
       url: '/key-result',
       icon: icons.IconList,
+    },
+
+    read_okr_cycle: {
+      id: 'plan',
+      title: 'My Objectives & Key Results',
+      url: '/main-activity',
+      icon: icons.IconTarget,
     },
     'read:task-status': {
       id: 'task-status',
@@ -140,12 +154,7 @@ export const dashboard = () => {
       url: '/inti',
       icon: icons.IconCircle,
     },
-    'read:plan': {
-      id: 'plan',
-      title: 'My Main Activities',
-      url: '/main-activity',
-      icon: icons.IconList,
-    },
+
     'read:childunit': {
       id: 'childunit',
       title: 'My Child Main Activities',
@@ -177,7 +186,7 @@ export const dashboard = () => {
       icon: icons.IconCircleCheck,
     },
 
-    'read:monitoring': {
+    read_unit_type: {
       id: 'monitoring',
       title: 'Monitoring',
       url: '/monitoring',
@@ -209,14 +218,13 @@ export const dashboard = () => {
       url: '/performance',
       icon: icons.IconTrophy,
     },
-   
+
     'read:activitytype': {
       id: 'activity-type',
       title: 'Activity Type',
       url: '/activity-type',
       icon: icons.IconZoomScan,
     },
-   
   };
 
   if (auth) {

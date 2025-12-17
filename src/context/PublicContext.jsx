@@ -11,8 +11,6 @@ import {
   Divider,
   IconButton,
   Grid,
-  useScrollTrigger,
-  Slide,
   useTheme,
   alpha,
 } from '@mui/material';
@@ -26,20 +24,20 @@ import {
 export default function PublicLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
- let tenant =
-  localStorage.getItem("current_tenant") ||
-  window.localStorage.getItem("current_tenant");
 
+  let tenant =
+    localStorage.getItem('current_tenant') ||
+    window.localStorage.getItem('current_tenant');
 
-if (!tenant) {
-  const hostname = window.location.hostname; // e.g. adan.bet.com
-  const parts = hostname.split(".");
+  if (!tenant) {
+    const hostname = window.location.hostname;
+    const parts = hostname.split('.');
 
-  // Only extract subdomain if at least 3 parts exist
-  if (parts.length >= 3) {
-    tenant = parts[0]; // first part = subdomain
+    // Ensures tenant.wutet.com
+    if (parts.length === 3 && parts[1] === 'wutet' && parts[2] === 'com') {
+      tenant = parts[0];
+    }
   }
-}
 
   const navItems = [
     { label: 'Features', href: '#features' },
@@ -109,7 +107,14 @@ if (!tenant) {
                     {item.label}
                   </Link>
                 ))}
-                <Box sx={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:4}}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 4,
+                  }}
+                >
                   {tenant && (
                     <Button variant="outlined" href="/login">
                       Sign In

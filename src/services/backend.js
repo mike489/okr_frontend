@@ -1,9 +1,8 @@
 // ================================
 // Base URLs from .env
 // ================================
-const PMS_API = import.meta.env.VITE_PMS_URL;   // Example: https://backend.wutet.com
+const PMS_API = import.meta.env.VITE_PMS_URL; // Example: https://backend.wutet.com
 const AUTH_API = import.meta.env.VITE_AUTH_URL; // Example: https://backend.wutet.com/auth
-
 
 // ================================
 // Read tenant from localStorage
@@ -11,7 +10,6 @@ const AUTH_API = import.meta.env.VITE_AUTH_URL; // Example: https://backend.wute
 const getTenant = () => {
   return localStorage.getItem('current_tenant') || '';
 };
-
 
 // ================================
 // Build Tenant-Based PMS API URL
@@ -33,7 +31,6 @@ const TenantUrl = (path) => {
 const authUrl = (path) => {
   return `${AUTH_API}/${path}`;
 };
-
 
 // ================================
 // BACKEND ROUTES
@@ -61,10 +58,10 @@ const Backend = {
 
   /** Units & Roles */
   roles: 'roles',
-  permissions: 'permissions', 
+  permissions: 'permissions',
   units: 'units',
   allUnits: 'units',
-  myUnit: 'my-unit',
+  myUnits: 'my-units',
   unitsImanage: 'units-i-manage',
   unitByTypes: 'unit-by-type/',
   getManagers: 'get-managers',
@@ -77,7 +74,7 @@ const Backend = {
   planInitiative: 'update-initiative/',
 
   /** Tasks & Monitoring */
-  fiscalYears: "fiscal-years",
+  fiscalYears: 'fiscal-years',
   tasks: 'tasks',
   createTask: 'create-task',
   approveTask: 'approve-task',
@@ -132,6 +129,11 @@ const Backend = {
   exportMyPlans: 'export-my-planning',
   exportMyMonitoring: 'export-my-monitoring',
   exportMyPerformance: 'export-my-performance',
+
+  /** Distribute */
+  okrDistribute: 'okr-distributions',
+  myOkrAssignments: 'my-okr-assignments',
+  monitoring: 'monitoring',
 
   /** EOD */
   eodfetch: 'end-of-day-activities',
