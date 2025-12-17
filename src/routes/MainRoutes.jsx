@@ -88,6 +88,7 @@ const KPIManagement = Loadable(lazy(() => import('views/kpi')));
 const Users = Loadable(lazy(() => import('views/users')));
 const Workflows = Loadable(lazy(() => import('views/workflows')));
 const Report = Loadable(lazy(() => import('views/Report')));
+const ReportMonitoring = Loadable(lazy(() => import('views/ReportMonitoring')));
 const Viewoverallcompany = Loadable(
   lazy(() => import('views/Report/admin_side/UnitDetailView')),
 );
@@ -688,6 +689,14 @@ const MainRoutes = {
       element: (
         <Protected>
           <Planning />
+        </Protected>
+      ),
+    },
+    {
+      path: 'report-monitoring',
+      element: (
+        <Protected>
+          <ReportMonitoring />
         </Protected>
       ),
     },

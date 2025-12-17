@@ -27,6 +27,7 @@ import {
   IconGraphFilled,
   IconDisc,
   IconTarget,
+  IconFileAnalytics,
 } from '@tabler/icons-react';
 
 const icons = {
@@ -58,6 +59,7 @@ const icons = {
   IconGraphFilled,
   IconDisc,
   IconTarget,
+  IconFileAnalytics,
 };
 import getRolesAndPermissionsFromToken from 'utils/auth/getRolesAndPermissionsFromToken';
 
@@ -79,7 +81,7 @@ export const dashboard = () => {
     'read:task_status',
     'read:task',
     'read:myteams',
-
+    'read_objective',
     'read_key_result',
     'read_okr_cycle',
 
@@ -95,15 +97,16 @@ export const dashboard = () => {
     'read:monitoringReport',
     'read:deletelog',
     // 'read:childunit',
-    'read_objective',
+
     // 'read:initiative',
     // 'read:employee',
     'read:monitoring',
     'read:myteamplanreport',
     'read:reporting',
     'read:activitytype',
-    'read_okr_cycle',
+
     'read_unit_type',
+    'read_user_session',
   ];
 
   const permissionMap = {
@@ -144,9 +147,15 @@ export const dashboard = () => {
 
     read_okr_cycle: {
       id: 'plan',
-      title: 'My Objectives & Key Results',
+      title: 'Distributed Plan',
       url: '/main-activity',
       icon: icons.IconTarget,
+    },
+    read_user_session: {
+      id: 'Report',
+      title: 'Report',
+      url: '/report-monitoring',
+      icon: icons.IconFileAnalytics,
     },
     'read:task-status': {
       id: 'task-status',

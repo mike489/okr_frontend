@@ -135,6 +135,8 @@ const Backend = {
   myOkrAssignments: 'my-okr-assignments',
   monitoring: 'monitoring',
 
+  monitoringUpdate: 'monitoring-update',
+
   /** EOD */
   eodfetch: 'end-of-day-activities',
 
