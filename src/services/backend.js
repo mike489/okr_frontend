@@ -69,6 +69,7 @@ const Backend = {
 
   /** Objectives, KPIs, Key Results */
   objectives: 'objectives',
+  myObjectives: 'my-objectives',
   keyResults: 'key-results',
   initiatives: 'initiatives',
   planInitiative: 'update-initiative/',

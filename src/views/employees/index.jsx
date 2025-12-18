@@ -35,7 +35,7 @@ import {
 } from '@tabler/icons-react';
 import { ExcelTemplates } from 'configration/templates';
 import RightSlideIn from 'ui-component/modal/RightSlideIn';
-import FilterEmployees from './components/FilterEmployeeForm';
+// import FilterEmployees from './components/FilterEmployeeForm';
 import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
 
 const AddEmployeeOptions = ['Add Employee', 'Import From Excel'];
@@ -204,47 +204,65 @@ const Employees = () => {
     }
   };
 
-  const handleEmployeeAddition = (value, roles) => {
+  const handleEmployeeAddition = async (employeeData) => {
     setIsAdding(true);
-    const token = localStorage.getItem('token');
-    const Api = Backend.api + Backend.employees;
-    const header = {
-      Authorization: `Bearer ${token}`,
-      accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
 
-    const data = {
-      name: value?.name,
-      username: value?.username,
-      phone: value?.phone,
-      unit_id: value?.unit,
-      roles: roles,
-      started_date: value?.start_date,
-    };
+    try {
+      const token = await GetToken();
+      const apiUrl = Backend.pmsUrl('employees');
 
-    fetch(Api, {
-      method: 'POST',
-      headers: header,
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.success) {
-          setIsAdding(false);
-          handleAddEmployeeClose();
-          toast.success(response.data.message);
-          handleFetchingEmployees();
-        } else {
-          toast.error(response.data.message);
-        }
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      })
-      .finally(() => {
-        setIsAdding(false);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      // Prepare the payload according to the new structure
+      const payload = {
+        employee_code: employeeData.employee_code,
+        name: employeeData.name,
+        email: employeeData.email,
+        phone: employeeData.phone,
+        gender: employeeData.gender,
+        unit_id: employeeData.unit_id,
+        supervisor_id: employeeData.supervisor_id || null,
+        job_position_id: employeeData.job_position_id,
+        address: employeeData.address,
+        date_of_birth: employeeData.date_of_birth,
+        started_date: employeeData.start_date,
+        roles: employeeData.roles || [],
+      };
+
+      console.log('Adding employee with payload:', payload);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message || 'Employee added successfully');
+        handleAddEmployeeClose();
+        handleFetchingEmployees(); // Refresh the employee list
+      } else {
+        toast.error(data.message || 'Failed to add employee');
+      }
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      toast.error(error.message || 'Failed to add employee');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const handleUpdatingEmployees = (value, roles) => {
@@ -255,25 +273,25 @@ const Employees = () => {
       setIsUpdating(false);
       return;
     }
-  
+
     const Api = Backend.api + Backend.employees + `/${selectedRow?.id || ''}`;
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
       'Content-Type': 'application/json',
     };
-  
+
     const data = {
       name: value?.name,
       id: value?.id,
       phone: value?.phone,
       unit_id: value?.unit,
-      roles: roles, 
+      roles: roles,
       started_date: value?.start_date,
     };
-  
+
     console.log('Updating employee with data:', data); // Debug log
-  
+
     fetch(Api, {
       method: 'PATCH',
       headers: header,
@@ -347,42 +365,64 @@ const Employees = () => {
   const handleFetchingEmployees = async () => {
     setLoading(true);
     const token = await GetToken();
-    const Api =
-      Backend.api +
-      Backend.employees +
-      `?page=${pagination.page + 1}&per_page=${pagination.perPage}&search=${search}&sort_by=${filters.sort_by}&sort_order=${filters.sort_order}&gender=${filters.gender === 'All' ? '' : filters.gender}&unit_id=${filters.unit === 'All' ? '' : filters.unit}&job_position_id=${filters.job_position === 'All' ? '' : filters.position}&eligible=${filters.eligibility === 'All' ? '' : filters.eligibility === 'Eligible' ? 1 : 0}`;
-    const header = {
+
+    // Build query parameters
+    const queryParams = new URLSearchParams({
+      page: pagination.page + 1,
+      per_page: pagination.perPage,
+      search: search,
+      sort_by: filters.sort_by,
+      sort_order: filters.sort_order,
+      gender: filters.gender === 'All' ? '' : filters.gender,
+      unit_id: filters.unit === 'All' ? '' : filters.unit,
+      job_position_id:
+        filters.job_position === 'All' ? '' : filters.job_position,
+      is_eligible:
+        filters.eligibility === 'All'
+          ? ''
+          : filters.eligibility === 'Eligible'
+            ? '1'
+            : '0',
+    }).toString();
+
+    const apiUrl = Backend.pmsUrl(`employees?${queryParams}`);
+
+    const headers = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
       'Content-Type': 'application/json',
     };
 
-    fetch(Api, {
-      method: 'GET',
-      headers: header,
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        if (response.success) {
-          setData(response.data);
-          setPagination({
-            ...pagination,
-            last_page: response.data.last_page,
-            total: response.data.total,
-          });
-          setLoading(false);
-          setError(false);
-        } else {
-          setLoading(false);
-          setError(false);
-        }
-      })
-      .catch((error) => {
-        toast.warning(error.message);
-        setError(true);
-        setLoading(false);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Make sure to access the correct data path
+        setData(data.data?.data || []);
+        setPagination({
+          ...pagination,
+          last_page: data.data.last_page,
+          total: data.data.total,
+        });
+      } else {
+        toast.warning(data.message || 'Failed to fetch employees');
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast.warning(error.message);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -466,7 +506,7 @@ const Employees = () => {
         </Box>
       }
       rightOption={
-        hasPermission('create:employee') && (
+        hasPermission('create_employee') && (
           <SplitButton
             options={AddEmployeeOptions}
             handleSelection={(value) => handleEmployeeAdd(value)}
@@ -489,7 +529,7 @@ const Employees = () => {
                 <TableRow>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      Username{' '}
+                      User ID
                       <IconButton
                         sx={{ ml: 1 }}
                         onClick={() =>
@@ -598,7 +638,7 @@ const Employees = () => {
                       }
                     >
                       <TableCell sx={{ border: 0 }}>
-                        {employee?.username}
+                        {employee?.user?.username || 'N/A'}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -611,33 +651,25 @@ const Employees = () => {
                           variant="subtitle1"
                           color={theme.palette.text.primary}
                         >
-                          {employee?.name}
+                          {employee?.full_name || employee?.user?.name || 'N/A'}
                         </Typography>
                       </TableCell>
-                      {/*  */}
                       <TableCell sx={{ border: 0 }}>
-                        {employee?.phone}
+                        {employee?.phone || employee?.user?.phone || 'N/A'}
                       </TableCell>
                       <TableCell sx={{ border: 0 }}>
-                        {employee?.unit_name}
+                        {employee?.unit || employee?.user?.unit?.name || 'N/A'}
                       </TableCell>
-
                       <TableCell sx={{ border: 0 }}>
-                        {employee?.roles
-                          ?.map((role) => role.name || 'N/A')
-                          .join(', ')}
+                        {employee?.job_position?.name || 'N/A'}
                       </TableCell>
                       <TableCell sx={{ border: 0 }}>
                         <DotMenu
-                          // onView={() =>
-                          //   navigate('/employees/view', { state: employee })
-                          // }
                           onEdit={
                             hasPermission('update:employee')
                               ? () => handleEmployeeUpdate(employee)
                               : null
                           }
-                         
                           onDelete={
                             hasPermission('delete:employee')
                               ? () => handleRemoveEmployee(employee)
@@ -713,12 +745,12 @@ const Employees = () => {
         open={openFilterModal}
         handleClose={handleClosingFilterModal}
       >
-        <FilterEmployees
+        {/* <FilterEmployees
           filters={filters}
           onInputChange={handleChange}
           onReset={handleReset}
           onSort={(name, value) => handleSorting(name, value)}
-        />
+        /> */}
       </RightSlideIn>
 
       <ToastContainer />

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -17,159 +17,221 @@ import {
   OutlinedInput,
   Select,
   TextField,
-} from "@mui/material";
-import { IconX } from "@tabler/icons-react";
-import { useFormik } from "formik";
-import { toast } from "react-toastify";
-import * as Yup from "yup";
-import PropTypes from "prop-types";
-import GetToken from "utils/auth-token";
-import ActivityIndicator from "ui-component/indicators/ActivityIndicator";
-import Backend from "services/backend";
+} from '@mui/material';
+import { IconX } from '@tabler/icons-react';
+import { useFormik } from 'formik';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import PropTypes from 'prop-types';
+import GetToken from 'utils/auth-token';
+import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
+import Backend from 'services/backend';
 
-// ------------------------------- VALIDATION ------------------------------- //
+// Validation
 const validationSchema = Yup.object({
-  name: Yup.string().required("Unit name is required"),
-  type: Yup.string().required("Unit type is required"),
-  parent: Yup.string().nullable(),  // <-- Fixed (no UUID blocking)
-  head: Yup.string().required("Head user is required"),
+  name: Yup.string().required('Unit name is required'),
+  type: Yup.string().required('Unit type is required'),
+  head: Yup.string().required('Head user is required'),
+  parent: Yup.string().nullable(),
   description: Yup.string().nullable(),
 });
 
-// ------------------------------- EDIT UNIT ------------------------------- //
-const EditUnit = ({ edit, isEditing, selectedUnit, types, onClose, handleSubmission }) => {
+const EditUnit = ({
+  edit,
+  isEditing,
+  selectedUnit,
+  types,
+  onClose,
+  handleSubmission,
+}) => {
   const [users, setUsers] = React.useState([]);
   const [units, setUnits] = React.useState({ loading: false, data: [] });
+
+  // Store the parent ID from selectedUnit
+  const [initialParentId, setInitialParentId] = React.useState('');
 
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      name: selectedUnit?.name || "",
-      type: String(selectedUnit?.unit_type?.id || ""),
-      parent: selectedUnit?.parent_id ? String(selectedUnit?.parent_id) : "",
-      head: selectedUnit?.head?.id ? String(selectedUnit?.head?.id) : "",
-      description: selectedUnit?.description || "",
+      name: selectedUnit?.name || '',
+      type: selectedUnit?.unit_type?.id
+        ? String(selectedUnit.unit_type.id)
+        : '',
+      head: selectedUnit?.head?.id ? String(selectedUnit.head.id) : '',
+      parent: initialParentId, // Use the properly formatted parent ID
+      description: selectedUnit?.description || '',
     },
     validationSchema,
-    onSubmit: async (values) => {
+    onSubmit: (values) => {
       const payload = {
         name: values.name.trim(),
-        type: values.type,
-        parent: values.parent || null,
-        head: values.head,
+        type: values.type.toString(),
+        head: values.head.toString(),
+        parent: values.parent ? values.parent.toString() : null,
         description: values.description.trim() || null,
       };
 
-      console.log("EDIT PAYLOAD →", payload);
-      handleSubmission(payload);
+      console.log('EDIT PAYLOAD →', payload);
+      handleSubmission(payload, selectedUnit?.id);
     },
   });
 
-  // --------------------------- Fetch Users --------------------------- //
-  const fetchUsers = async () => {
-    try {
-      const token = await GetToken();
-      const res = await fetch(Backend.api + Backend.users, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json();
-      setUsers(json.success ? json.data?.data || [] : []);
-    } catch (err) {
-      toast.error("Failed to load users");
-    }
-  };
-
-  // --------------------------- Fetch Units --------------------------- //
-  const fetchUnits = async () => {
-    setUnits({ loading: true, data: [] });
-    try {
-      const token = await GetToken();
-      const res = await fetch(Backend.api + Backend.allUnits, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const json = await res.json();
-      setUnits({
-        loading: false,
-        data: json?.data?.data?.data || [],
-      });
-    } catch (err) {
-      toast.error("Failed to load units");
-      setUnits({ loading: false, data: [] });
-    }
-  };
-
-  // --------------------------- Load Data on Open --------------------------- //
+  // Update formik values when initialParentId changes
   React.useEffect(() => {
-    if (edit && selectedUnit) {
-      fetchUsers();
-      fetchUnits();
+    if (initialParentId !== '' && formik.values.parent !== initialParentId) {
+      formik.setFieldValue('parent', initialParentId);
     }
+  }, [initialParentId]);
+
+  // Fetch data when dialog opens
+  React.useEffect(() => {
+    if (!edit || !selectedUnit) return;
+
+    const loadData = async () => {
+      const token = await GetToken();
+
+      try {
+        // Fetch users
+        const usersResponse = await fetch(Backend.pmsUrl('users'), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const usersData = await usersResponse.json();
+        setUsers(usersData.success ? usersData.data?.data || [] : []);
+
+        // Fetch units (for parent selection)
+        setUnits({ loading: true, data: [] });
+        const unitsResponse = await fetch(Backend.pmsUrl('units'), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const unitsData = await unitsResponse.json();
+
+        // Check the structure of the response
+        const unitsList =
+          unitsData?.data?.data?.data ||
+          unitsData?.data?.data ||
+          unitsData?.data ||
+          [];
+        console.log('Units data structure:', unitsData);
+        console.log('Parsed units list:', unitsList);
+
+        setUnits({
+          loading: false,
+          data: unitsList,
+        });
+
+        // Set the initial parent ID from selectedUnit
+        // First check if selectedUnit has a parent object
+        if (selectedUnit.parent && selectedUnit.parent.id) {
+          setInitialParentId(String(selectedUnit.parent.id));
+        }
+        // Then check if it has parent_id directly
+        else if (selectedUnit.parent_id) {
+          setInitialParentId(String(selectedUnit.parent_id));
+        } else {
+          setInitialParentId(''); // No parent
+        }
+
+        console.log('Selected Unit:', selectedUnit);
+        console.log('Initial Parent ID to set:', initialParentId);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load data');
+        setUnits({ loading: false, data: [] });
+      }
+    };
+
+    loadData();
   }, [edit, selectedUnit]);
+
+  // Debug log to see what's happening with the parent value
+  React.useEffect(() => {
+    console.log('Formik parent value:', formik.values.parent);
+    console.log(
+      'Available units:',
+      units.data.map((u) => ({ id: u.id, name: u.name })),
+    );
+  }, [formik.values.parent, units.data]);
+
+  // Reset form when dialog closes
+  React.useEffect(() => {
+    if (!edit) {
+      formik.resetForm();
+      setUsers([]);
+      setUnits({ loading: false, data: [] });
+      setInitialParentId('');
+    }
+  }, [edit]);
 
   return (
     <Dialog open={edit} onClose={onClose} maxWidth="sm" fullWidth>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pr: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', pr: 2 }}>
         <DialogTitle>Edit Unit</DialogTitle>
         <IconButton onClick={onClose}>
-          <IconX size={20} />
+          <IconX />
         </IconButton>
       </Box>
 
       <form onSubmit={formik.handleSubmit}>
         <DialogContent dividers>
-          {/* Unit Name */}
+          {/* Name */}
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Unit Name</InputLabel>
+            <InputLabel>Unit Name *</InputLabel>
             <OutlinedInput
               name="name"
-              label="Unit Name"
               value={formik.values.name}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.name && Boolean(formik.errors.name)}
+              error={formik.touched.name && !!formik.errors.name}
             />
             <FormHelperText error>
               {formik.touched.name && formik.errors.name}
             </FormHelperText>
           </FormControl>
 
-          {/* Unit Type */}
-          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.type && Boolean(formik.errors.type)}>
-            <InputLabel>Unit Type</InputLabel>
+          {/* Type */}
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+            error={formik.touched.type && !!formik.errors.type}
+          >
+            <InputLabel>Unit Type *</InputLabel>
             <Select
-              name="type"
               value={formik.values.type}
-              onChange={(e) => formik.setFieldValue("type", e.target.value)}
+              onChange={(e) => formik.setFieldValue('type', e.target.value)}
             >
+              <MenuItem value="" disabled>
+                Select Type
+              </MenuItem>
               {types.map((t) => (
-                <MenuItem key={t.id} value={String(t.id)}>
+                <MenuItem key={t.id} value={t.id}>
                   {t.name}
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{formik.touched.type && formik.errors.type}</FormHelperText>
+            <FormHelperText>
+              {formik.touched.type && formik.errors.type}
+            </FormHelperText>
           </FormControl>
 
-          {/* Parent Unit */}
+          {/* Parent */}
           <FormControl fullWidth sx={{ mt: 3 }}>
             <InputLabel>Parent Unit</InputLabel>
             <Select
               name="parent"
               value={formik.values.parent}
-              onChange={(e) => formik.setFieldValue("parent", e.target.value)}
+              onChange={formik.handleChange}
               disabled={units.loading}
             >
               <MenuItem value="">
-                <em>None (Top Level)</em>
+                <em>None</em>
               </MenuItem>
-
               {units.loading ? (
                 <MenuItem disabled>
                   <ActivityIndicator size={18} /> Loading...
                 </MenuItem>
               ) : (
                 units.data
-                  .filter((u) => u.id !== selectedUnit?.id) // prevent self-parent
+                  .filter((u) => u.id !== selectedUnit?.id) // Prevent self-parenting
                   .map((u) => (
                     <MenuItem key={u.id} value={String(u.id)}>
                       {u.name}
@@ -177,29 +239,43 @@ const EditUnit = ({ edit, isEditing, selectedUnit, types, onClose, handleSubmiss
                   ))
               )}
             </Select>
+            <FormHelperText>
+              {formik.values.parent &&
+              !units.data.some((u) => String(u.id) === formik.values.parent)
+                ? 'Warning: Current parent unit not found in list'
+                : ''}
+            </FormHelperText>
           </FormControl>
 
-          {/* Head User */}
-          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.head && Boolean(formik.errors.head)}>
-            <InputLabel>Head (User)</InputLabel>
+          {/* Head */}
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+            error={formik.touched.head && !!formik.errors.head}
+          >
+            <InputLabel>Head User *</InputLabel>
             <Select
-              name="head"
               value={formik.values.head}
-              onChange={(e) => formik.setFieldValue("head", e.target.value)}
+              onChange={(e) => formik.setFieldValue('head', e.target.value)}
             >
+              <MenuItem value="" disabled>
+                Select User
+              </MenuItem>
               {users.map((user) => (
                 <MenuItem key={user.id} value={String(user.id)}>
                   {user.name} {user.email && `(${user.email})`}
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{formik.touched.head && formik.errors.head}</FormHelperText>
+            <FormHelperText>
+              {formik.touched.head && formik.errors.head}
+            </FormHelperText>
           </FormControl>
 
           {/* Description */}
           <TextField
             fullWidth
-            label="Description (Optional)"
+            label="Description"
             name="description"
             multiline
             rows={3}
@@ -209,18 +285,16 @@ const EditUnit = ({ edit, isEditing, selectedUnit, types, onClose, handleSubmiss
           />
         </DialogContent>
 
-        {/* Buttons */}
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={onClose} variant="outlined">
             Cancel
           </Button>
-
           <Button
             type="submit"
             variant="contained"
-            disabled={isEditing}   // only disabled when real loading
+            disabled={isEditing || !formik.isValid || !formik.dirty}
           >
-            {isEditing ? <CircularProgress size={20} /> : "Update Unit"}
+            {isEditing ? <CircularProgress size={20} /> : 'Update Unit'}
           </Button>
         </DialogActions>
       </form>

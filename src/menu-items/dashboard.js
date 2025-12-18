@@ -157,6 +157,12 @@ export const dashboard = () => {
       url: '/report-monitoring',
       icon: icons.IconFileAnalytics,
     },
+    read_user_session: {
+      id: 'My Objectives',
+      title: 'My Objectives',
+      url: '/my-objectives',
+      icon: icons.IconFileAnalytics,
+    },
     'read:task-status': {
       id: 'task-status',
       title: 'Init',

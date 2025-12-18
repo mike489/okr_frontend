@@ -127,9 +127,10 @@ const Plan = () => {
 
     try {
       const data = {
-        assigned_to: value.unit_id, // Changed from value.assigned_to to value.unit_id
+        assigned_to: value.unit_id,
         key_results: value.plans.map((plan) => ({
           id: plan.id,
+          objective_name: plan.objective_name,
           months: plan.months.map((month) => ({
             month_name: month.month_name,
             target: month.target,

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -17,21 +17,21 @@ import {
   OutlinedInput,
   Select,
   TextField,
-} from "@mui/material";
-import { IconX } from "@tabler/icons-react";
-import { useFormik } from "formik";
-import { toast } from "react-toastify";
-import * as Yup from "yup";
-import PropTypes from "prop-types";
-import GetToken from "utils/auth-token";
-import ActivityIndicator from "ui-component/indicators/ActivityIndicator";
-import Backend from "services/backend";
+} from '@mui/material';
+import { IconX } from '@tabler/icons-react';
+import { useFormik } from 'formik';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import PropTypes from 'prop-types';
+import GetToken from 'utils/auth-token';
+import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
+import Backend from 'services/backend';
 
 // Validation
 const validationSchema = Yup.object({
-  name: Yup.string().required("Unit name is required"),
-  type: Yup.string().required("Unit type is required"),
-  head: Yup.string().required("Head user is required"),
+  name: Yup.string().required('Unit name is required'),
+  type: Yup.string().required('Unit type is required'),
+  head: Yup.string().required('Head user is required'),
   parent: Yup.string().nullable(),
   description: Yup.string().nullable(),
 });
@@ -42,24 +42,24 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
-      type: "",
-      head: "",
-      parent: "",
-      description: "",
+      name: '',
+      type: '',
+      head: '',
+      parent: '',
+      description: '',
     },
     validationSchema,
     onSubmit: (values) => {
       // THIS IS THE FINAL FIX THAT WORKS
       const payload = {
         name: values.name.trim(),
-        type: values.type.toString(),        // ← Force string (Laravel loves this)
-        head: values.head.toString(),        // ← Force string
+        type: values.type.toString(), // ← Force string (Laravel loves this)
+        head: values.head.toString(), // ← Force string
         parent: values.parent ? values.parent.toString() : null,
         description: values.description.trim() || null,
       };
 
-      console.log("PAYLOAD SENT TO BACKEND →", payload);
+      console.log('PAYLOAD SENT TO BACKEND →', payload);
       // You will see: { name: "HR", type: "2", head: "15", parent: null, ... }
 
       handleSubmission(payload); // ← Must be plain object, not FormData!
@@ -78,14 +78,14 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
       const token = await GetToken();
 
       // Users
-      const uRes = await fetch(Backend.api + Backend.users, {
+      const uRes = await fetch(Backend.pmsUrl('users'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       const uJson = await uRes.json();
       setUsers(uJson.success ? uJson.data?.data || [] : []);
 
       // Units
-      const unitRes = await fetch(Backend.api + Backend.allUnits, {
+      const unitRes = await fetch(Backend.pmsUrl('units'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       const unitJson = await unitRes.json();
@@ -100,9 +100,11 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
 
   return (
     <Dialog open={add} onClose={onClose} maxWidth="sm" fullWidth>
-      <Box sx={{ display: "flex", justifyContent: "space-between", pr: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', pr: 2 }}>
         <DialogTitle>Add New Unit</DialogTitle>
-        <IconButton onClick={onClose}><IconX /></IconButton>
+        <IconButton onClick={onClose}>
+          <IconX />
+        </IconButton>
       </Box>
 
       <form onSubmit={formik.handleSubmit}>
@@ -117,22 +119,34 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
               onBlur={formik.handleBlur}
               error={formik.touched.name && !!formik.errors.name}
             />
-            <FormHelperText error>{formik.touched.name && formik.errors.name}</FormHelperText>
+            <FormHelperText error>
+              {formik.touched.name && formik.errors.name}
+            </FormHelperText>
           </FormControl>
 
           {/* Type */}
-          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.type && !!formik.errors.type}>
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+            error={formik.touched.type && !!formik.errors.type}
+          >
             <InputLabel>Unit Type *</InputLabel>
             <Select
               value={formik.values.type}
-              onChange={(e) => formik.setFieldValue("type", e.target.value)}
+              onChange={(e) => formik.setFieldValue('type', e.target.value)}
             >
-              <MenuItem value="" disabled>Select Type</MenuItem>
+              <MenuItem value="" disabled>
+                Select Type
+              </MenuItem>
               {types.map((t) => (
-                <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                <MenuItem key={t.id} value={t.id}>
+                  {t.name}
+                </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{formik.touched.type && formik.errors.type}</FormHelperText>
+            <FormHelperText>
+              {formik.touched.type && formik.errors.type}
+            </FormHelperText>
           </FormControl>
 
           {/* Parent */}
@@ -140,30 +154,44 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
             <InputLabel>Parent Unit</InputLabel>
             <Select
               value={formik.values.parent}
-              onChange={(e) => formik.setFieldValue("parent", e.target.value || "")}
+              onChange={(e) =>
+                formik.setFieldValue('parent', e.target.value || '')
+              }
             >
-              <MenuItem value=""><em>None</em></MenuItem>
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
               {units.data.map((u) => (
-                <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>
+                <MenuItem key={u.id} value={u.id}>
+                  {u.name}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
 
           {/* Head */}
-          <FormControl fullWidth sx={{ mt: 3 }} error={formik.touched.head && !!formik.errors.head}>
+          <FormControl
+            fullWidth
+            sx={{ mt: 3 }}
+            error={formik.touched.head && !!formik.errors.head}
+          >
             <InputLabel>Head User *</InputLabel>
             <Select
               value={formik.values.head}
-              onChange={(e) => formik.setFieldValue("head", e.target.value)}
+              onChange={(e) => formik.setFieldValue('head', e.target.value)}
             >
-              <MenuItem value="" disabled>Select User</MenuItem>
+              <MenuItem value="" disabled>
+                Select User
+              </MenuItem>
               {users.map((user) => (
                 <MenuItem key={user.id} value={user.id}>
                   {user.name}
                 </MenuItem>
               ))}
             </Select>
-            <FormHelperText>{formik.touched.head && formik.errors.head}</FormHelperText>
+            <FormHelperText>
+              {formik.touched.head && formik.errors.head}
+            </FormHelperText>
           </FormControl>
 
           {/* Description */}
@@ -186,7 +214,7 @@ const AddUnit = ({ add, isAdding, types, onClose, handleSubmission }) => {
             variant="contained"
             disabled={isAdding || !formik.isValid || !formik.dirty}
           >
-            {isAdding ? <CircularProgress size={20} /> : "Add Unit"}
+            {isAdding ? <CircularProgress size={20} /> : 'Add Unit'}
           </Button>
         </DialogActions>
       </form>

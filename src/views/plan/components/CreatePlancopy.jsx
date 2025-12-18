@@ -53,6 +53,7 @@ const validationSchema = Yup.object().shape({
     .of(
       Yup.object().shape({
         key_result_id: Yup.string().required('Key Result ID is required'), // Changed from activity_id
+        objective_name: Yup.string().required('Objective name is required'), // Add objective_name validation
         months: Yup.array()
           .of(
             Yup.object().shape({
@@ -82,32 +83,49 @@ const CreatePlan = ({
   create,
   isCreating,
   unit = [],
-  keyResults = [], // This will now be used for Main Activities
-  // activities = [], // Remove activities prop since we're using keyResults
+  keyResults = [],
+  // You might need to pass objectives or ensure keyResults have objective_name
+  objectives = [], // Optional: if you need a separate objectives list
   fiscalYearId,
   onClose,
   handleSubmission,
 }) => {
+  // Find objective name for a key result
+  const getObjectiveName = (keyResultId) => {
+    const keyResult = keyResults.find((kr) => kr.id === keyResultId);
+    // Check different possible property names for objective name
+    if (keyResult?.objective_name) return keyResult.objective_name;
+    if (keyResult?.objective?.name) return keyResult.objective.name;
+    if (keyResult?.objective?.title) return keyResult.objective.title;
+    if (keyResult?.parent_objective) return keyResult.parent_objective;
+    return ''; // Return empty string if not found
+  };
+
   const formik = useFormik({
     initialValues: {
       plans: [],
       months: [],
       unit_id: '',
+      notes: '', // Add notes field
       fiscal_year_id: fiscalYearId || '',
     },
     validationSchema,
     onSubmit: (values) => {
-      // Map months to the new plans structure
+      // Map months to the new plans structure with objective_name
       const formattedValues = {
         plans: values.months.map((m) => ({
           id: m.key_result_id,
+          objective_name:
+            m.objective_name || getObjectiveName(m.key_result_id) || '',
           months: m.months.map((month) => ({
             month_name: month.month_name || '',
             target: month.target || 0,
           })),
         })),
         unit_id: values.unit_id,
-        notes: values.notes || 'Increase sales by 10%',
+        notes: values.notes || '',
+        // Add assigned_to if needed - you might need to pass this as prop or get it from context
+        // assigned_to: '019b3175-ebe3-7005-8a54-583ee2769ab9', // You'll need to get this value
       };
       console.log('Submitted payload:', formattedValues);
       handleSubmission(formattedValues);
@@ -126,17 +144,28 @@ const CreatePlan = ({
     const newPlans = newValue.map((keyResult) => keyResult.id);
     const newMonths = newPlans.map((planId) => {
       const existing = formik.values.months.find(
-        (m) => m.key_result_id === planId, // Changed from activity_id
+        (m) => m.key_result_id === planId,
       );
       return (
         existing || {
-          key_result_id: planId, // Changed from activity_id
+          key_result_id: planId,
+          objective_name: getObjectiveName(planId) || '', // Initialize with objective name
           months: [{ month_name: '', target: 0 }],
         }
       );
     });
 
     formik.setFieldValue('plans', newPlans);
+    formik.setFieldValue('months', newMonths);
+  };
+
+  // Handle objective name change for a key result
+  const handleObjectiveNameChange = (keyResultIndex, value) => {
+    const newMonths = [...formik.values.months];
+    newMonths[keyResultIndex] = {
+      ...newMonths[keyResultIndex],
+      objective_name: value,
+    };
     formik.setFieldValue('months', newMonths);
   };
 
@@ -210,7 +239,8 @@ const CreatePlan = ({
       formik.values.months.length === formik.values.plans.length &&
       formik.values.months.every(
         (monthGroup) =>
-          monthGroup.key_result_id && // Changed from activity_id
+          monthGroup.key_result_id &&
+          monthGroup.objective_name && // Check objective_name is present
           monthGroup.months.length > 0 &&
           monthGroup.months.every(
             (month) =>
@@ -285,14 +315,26 @@ const CreatePlan = ({
             </FormHelperText>
           </FormControl>
 
-          {/* Key Results Autocomplete (was Main Activities) */}
+          {/* Notes Field */}
+          <TextField
+            fullWidth
+            label="Notes (Optional)"
+            name="notes"
+            multiline
+            rows={2}
+            value={formik.values.notes}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            sx={{ mb: 3 }}
+          />
+
+          {/* Key Results Autocomplete */}
           <Autocomplete
             multiple
             id="key-results"
             options={keyResults}
             getOptionLabel={(option) => {
               if (!option) return '';
-              // Adjust based on your key result data structure
               if (option.title) return option.title;
               if (option.name) return option.name;
               if (option.description) return option.description;
@@ -334,8 +376,14 @@ const CreatePlan = ({
                 {formik.values.plans.map((planId, keyResultIndex) => {
                   const keyResult = keyResults.find((kr) => kr.id === planId);
                   const monthData = formik.values.months.find(
-                    (m) => m.key_result_id === planId, // Changed from activity_id
+                    (m) => m.key_result_id === planId,
                   )?.months || [{ month_name: '', target: 0 }];
+
+                  const currentObjectiveName =
+                    formik.values.months.find((m) => m.key_result_id === planId)
+                      ?.objective_name ||
+                    getObjectiveName(planId) ||
+                    '';
 
                   return (
                     <Box
@@ -347,15 +395,55 @@ const CreatePlan = ({
                         borderRadius: 1,
                       }}
                     >
+                      {/* Key Result Title */}
                       <Typography
                         variant="subtitle1"
-                        sx={{ mb: 2, fontWeight: 'bold' }}
+                        sx={{ mb: 1, fontWeight: 'bold' }}
                       >
                         {keyResult?.title ||
                           keyResult?.name ||
                           keyResult?.description ||
                           'Unknown Key Result'}
                       </Typography>
+
+                      {/* Objective Name Input */}
+                      <TextField
+                        fullWidth
+                        label="Objective Name *"
+                        value={currentObjectiveName}
+                        onChange={(e) =>
+                          handleObjectiveNameChange(
+                            keyResultIndex,
+                            e.target.value,
+                          )
+                        }
+                        onBlur={() => {
+                          const newTouched = [...(formik.touched.months || [])];
+                          newTouched[keyResultIndex] = {
+                            ...newTouched[keyResultIndex],
+                            objective_name: true,
+                          };
+                          formik.setTouched({
+                            ...formik.touched,
+                            months: newTouched,
+                          });
+                        }}
+                        error={
+                          formik.touched.months?.[keyResultIndex]
+                            ?.objective_name &&
+                          Boolean(
+                            formik.errors.months?.[keyResultIndex]
+                              ?.objective_name,
+                          )
+                        }
+                        helperText={
+                          formik.touched.months?.[keyResultIndex]
+                            ?.objective_name &&
+                          formik.errors.months?.[keyResultIndex]?.objective_name
+                        }
+                        sx={{ mb: 2 }}
+                      />
+
                       <Stack spacing={2}>
                         {monthData.map((month, monthIndex) => {
                           // Filter out months selected in other entries for this key result
@@ -594,9 +682,14 @@ CreatePlan.propTypes = {
       title: PropTypes.string,
       name: PropTypes.string,
       description: PropTypes.string,
+      objective_name: PropTypes.string, // Add objective_name to propTypes
+      objective: PropTypes.shape({
+        name: PropTypes.string,
+        title: PropTypes.string,
+      }),
     }),
   ).isRequired,
-  // Remove activities propType
+  objectives: PropTypes.array, // Optional objectives array
   fiscalYearId: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
   handleSubmission: PropTypes.func.isRequired,

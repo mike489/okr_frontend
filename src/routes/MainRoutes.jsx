@@ -21,6 +21,7 @@ const KeyResult = Loadable(lazy(() => import('views/key_results')));
 const PlanDetail = Loadable(lazy(() => import('views/plan/planDetail')));
 const FeedBacks = Loadable(lazy(() => import('views/feedbacks')));
 const Objectives = Loadable(lazy(() => import('views/objective')));
+const MyObjective = Loadable(lazy(() => import('views/my-objective')));
 const Initiative = Loadable(lazy(() => import('views/initiatives')));
 const DiskReport = Loadable(lazy(() => import('views/disk-reporting')));
 const ActivityType = Loadable(lazy(() => import('views/activity-type')));
@@ -697,6 +698,22 @@ const MainRoutes = {
       element: (
         <Protected>
           <ReportMonitoring />
+        </Protected>
+      ),
+    },
+    {
+      path: 'employees',
+      element: (
+        <Protected>
+          <Employees />
+        </Protected>
+      ),
+    },
+    {
+      path: 'my-objectives',
+      element: (
+        <Protected>
+          <MyObjective />
         </Protected>
       ),
     },

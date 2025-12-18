@@ -87,9 +87,16 @@ const Units = () => {
       };
 
       const response = await fetch(Api, { method: 'GET', headers: header });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      setUnitType(data.success ? data.data.data : Array.isArray(data.data) ? data.data : []);
+      setUnitType(
+        data.success
+          ? data.data.data
+          : Array.isArray(data.data)
+            ? data.data
+            : [],
+      );
       setUnitLoading(false);
     } catch (error) {
       toast.error(`Error fetching unit types: ${error.message}`);
@@ -110,7 +117,8 @@ const Units = () => {
       };
 
       const response = await fetch(Api, { method: 'GET', headers: header });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       console.log('Managers response:', data);
       setManagers(data.success ? data.data : Array.isArray(data) ? data : []);
@@ -133,7 +141,7 @@ const Units = () => {
     setIsAdding(true);
     try {
       const token = await GetToken();
-      const Api = Backend.pmsUrl(Backend.units) ;
+      const Api = Backend.pmsUrl(Backend.units);
       const header = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -276,7 +284,7 @@ const Units = () => {
   const handleDelete = async (id, type = 'unit') => {
     try {
       const token = await GetToken();
-     const Api = `${Backend.pmsUrl(type === 'unit' ? Backend.units : Backend.types)}/${id}`;
+      const Api = `${Backend.pmsUrl(type === 'unit' ? Backend.units : Backend.types)}/${id}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         accept: 'application/json',
@@ -286,7 +294,9 @@ const Units = () => {
       const response = await fetch(Api, { method: 'DELETE', headers });
       const data = await response.json();
       if (response.ok && data.success) {
-        toast.success(`${type === 'unit' ? 'Unit' : 'Unit Type'} deleted successfully`);
+        toast.success(
+          `${type === 'unit' ? 'Unit' : 'Unit Type'} deleted successfully`,
+        );
         if (type === 'unit') handleFetchingUnits();
         else handleFetchingTypes();
         handleClose();
@@ -294,7 +304,9 @@ const Units = () => {
         toast.error(data.message || `Failed to delete ${type}`);
       }
     } catch (error) {
-      toast.error(`Error deleting ${type === 'unit' ? 'unit' : 'unit type'}: ${error.message}`);
+      toast.error(
+        `Error deleting ${type === 'unit' ? 'unit' : 'unit type'}: ${error.message}`,
+      );
     }
   };
 
@@ -311,7 +323,8 @@ const Units = () => {
       };
 
       const response = await fetch(Api, { method: 'GET', headers: header });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       if (data.success) {
         setData(data.data.data.data);
@@ -346,11 +359,15 @@ const Units = () => {
       const response = await axios.post(Api, formData, {
         headers,
         onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
           setUploadProgress(percent);
         },
       });
-      toast.success(response.data?.data?.message || 'File uploaded successfully');
+      toast.success(
+        response.data?.data?.message || 'File uploaded successfully',
+      );
     } catch (error) {
       toast.error(`Error uploading file: ${error.message}`);
     }
@@ -418,14 +435,35 @@ const Units = () => {
       }
     >
       <Grid container sx={{ borderRadius: 2, marginTop: 2 }}>
-        <Grid container sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Grid xs={12} sm={12} md={8} lg={8} xl={8} sx={{ minHeight: '64dvh', margin: 2 }}>
+        <Grid
+          container
+          sx={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          <Grid
+            xs={12}
+            sm={12}
+            md={8}
+            lg={8}
+            xl={8}
+            sx={{ minHeight: '64dvh', margin: 2 }}
+          >
             {loading ? (
-              <Box sx={{ padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  padding: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
                 <ActivityIndicator size={20} />
               </Box>
             ) : error ? (
-              <Fallbacks severity="error" title="Server error" description="There is error fetching units" />
+              <Fallbacks
+                severity="error"
+                title="Server error"
+                description="There is error fetching units"
+              />
             ) : data.length === 0 ? (
               <Fallbacks
                 severity="department"
@@ -455,10 +493,27 @@ const Units = () => {
               </>
             )}
           </Grid>
-          <Grid xs={12} sm={12} md={3.6} lg={3.6} xl={3.6} sx={{ paddingTop: 1 }}>
+          <Grid
+            xs={12}
+            sm={12}
+            md={3.6}
+            lg={3.6}
+            xl={3.6}
+            sx={{ paddingTop: 1 }}
+          >
             <DrogaCard>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingX: 1.6 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingX: 1.6,
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
+                >
                   Unit Types
                 </Typography>
                 {hasPermission('create_unit_type') && (
@@ -468,14 +523,31 @@ const Units = () => {
                   />
                 )}
               </Box>
-              <Divider sx={{ borderBottom: 0.4, borderColor: theme.palette.divider, marginY: 1 }} />
+              <Divider
+                sx={{
+                  borderBottom: 0.4,
+                  borderColor: theme.palette.divider,
+                  marginY: 1,
+                }}
+              />
               <Box>
                 {unitLoading ? (
-                  <Box sx={{ padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Box
+                    sx={{
+                      padding: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <ActivityIndicator size={20} />
                   </Box>
                 ) : error ? (
-                  <Fallbacks severity="error" title="Server error" description="There is error fetching unit type" />
+                  <Fallbacks
+                    severity="error"
+                    title="Server error"
+                    description="There is error fetching unit type"
+                  />
                 ) : unitType.length === 0 ? (
                   <Fallbacks
                     severity="department"
@@ -493,18 +565,33 @@ const Units = () => {
                         alignItems: 'center',
                         paddingY: 0.8,
                         paddingX: 2,
-                        ':hover': { backgroundColor: theme.palette.grey[50], borderRadius: 2 },
+                        ':hover': {
+                          backgroundColor: theme.palette.grey[50],
+                          borderRadius: 2,
+                        },
                       }}
                     >
-                      <Typography variant="body1" color={theme.palette.text.primary} sx={{ textTransform: 'capitalize' }}>
+                      <Typography
+                        variant="body1"
+                        color={theme.palette.text.primary}
+                        sx={{ textTransform: 'capitalize' }}
+                      >
                         {type.name}
                       </Typography>
                       <DotMenu
                         orientation="vertical"
                         onOpen={() => handleClick(type)}
                         onClose={handleClose}
-                        onEdit={hasPermission('update_unit_type') ? () => handleEditUnitType(selectedUnitType) : null}
-                        onDelete={hasPermission('delete_unit_type') ? () => handleDelete(selectedUnitType.id, 'type') : null}
+                        onEdit={
+                          hasPermission('update_unit_type')
+                            ? () => handleEditUnitType(selectedUnitType)
+                            : null
+                        }
+                        onDelete={
+                          hasPermission('delete_unit_type')
+                            ? () => handleDelete(selectedUnitType.id, 'type')
+                            : null
+                        }
                       />
                     </Box>
                   ))
