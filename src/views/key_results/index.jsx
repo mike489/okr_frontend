@@ -10,13 +10,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Typography,
-  Chip,
-  LinearProgress,
-  IconButton,
-  Paper,
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 
 import Backend from 'services/backend';
@@ -63,7 +58,9 @@ const KeyResults = () => {
       const data = await res.json();
       if (res.ok && data.success) {
         setObjectives(data.data?.data || []);
-        setSelectedObjective(data.data?.data[0]?.id || null);
+        if (data.data?.data[0]?.id) {
+          setSelectedObjective(data.data.data[0].id);
+        }
       } else toast.error('Failed to load objectives');
     } catch (err) {
       toast.error(err.message);
@@ -107,9 +104,116 @@ const KeyResults = () => {
     }
   };
 
+  // Add Key Result Handler
+  const handleAddKeyResult = async (values, { setSubmitting, resetForm }) => {
+    setActionLoading(true);
+    try {
+      const token = await GetToken();
+      const response = await fetch(Backend.pmsUrl(Backend.keyResults), {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          ...values,
+          tenant_id: tenant,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success('Key Result added successfully');
+        setAddModal(false);
+        handleFetchKeyResults(); // Refresh the list
+        resetForm();
+      } else {
+        toast.error(data.message || 'Failed to add key result');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setActionLoading(false);
+      setSubmitting(false);
+    }
+  };
+
+  // Edit Key Result Handler
+  const handleEditKeyResult = async (values, { setSubmitting }) => {
+    if (!selectedKR?.id) return;
+
+    setActionLoading(true);
+    try {
+      const token = await GetToken();
+      const response = await fetch(
+        Backend.pmsUrl(`${Backend.keyResults}/${selectedKR.id}`),
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            accept: 'application/json',
+          },
+          body: JSON.stringify(values),
+        },
+      );
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success('Key Result updated successfully');
+        setEditModal(false);
+        setSelectedKR(null);
+        handleFetchKeyResults(); // Refresh the list
+      } else {
+        toast.error(data.message || 'Failed to update key result');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setActionLoading(false);
+      setSubmitting(false);
+    }
+  };
+
+  // Delete Key Result Handler
+  const handleDeleteKeyResult = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this key result?')) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const token = await GetToken();
+      const response = await fetch(
+        Backend.pmsUrl(`${Backend.keyResults}/${id}`),
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+          },
+        },
+      );
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success('Key Result deleted successfully');
+        handleFetchKeyResults(); // Refresh the list
+      } else {
+        toast.error(data.message || 'Failed to delete key result');
+      }
+    } catch (error) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   useEffect(() => {
     handleFetchObjectives();
   }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setPagination((prev) => ({ ...prev, page: 0 }));
@@ -117,9 +221,12 @@ const KeyResults = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [search, selectedObjective, pagination.per_page]);
+
   useEffect(() => {
-    handleFetchKeyResults();
-  }, [pagination.page, pagination.per_page]);
+    if (selectedObjective) {
+      handleFetchKeyResults();
+    }
+  }, [pagination.page, pagination.per_page, selectedObjective]);
 
   const defaultFormValues = {
     objective_id: selectedObjective || '',
@@ -130,9 +237,6 @@ const KeyResults = () => {
     current_value: 0,
     target_value: 0,
     weight: 0,
-    confidence: 0,
-    progress: 0,
-    calc_method: 'manual',
   };
 
   return (
@@ -160,6 +264,30 @@ const KeyResults = () => {
       }
     >
       <Grid container spacing={3} mt={1}>
+        {/* Objective Selector */}
+        <Grid item xs={12}>
+          <Box mb={2}>
+            <select
+              value={selectedObjective || ''}
+              onChange={(e) => setSelectedObjective(e.target.value)}
+              style={{
+                padding: '10px',
+                borderRadius: '4px',
+                border: `1px solid ${theme.palette.divider}`,
+                width: '100%',
+                maxWidth: '300px',
+              }}
+            >
+              <option value="">Select an Objective</option>
+              {objectives.map((obj) => (
+                <option key={obj.id} value={obj.id}>
+                  {obj.title || obj.name}
+                </option>
+              ))}
+            </select>
+          </Box>
+        </Grid>
+
         <Grid item xs={12}>
           {loading ? (
             <Box display="flex" justifyContent="center" py={8}>
@@ -180,7 +308,7 @@ const KeyResults = () => {
                   setSelectedKR(kr);
                   setEditModal(true);
                 }}
-                onDelete={() => {}}
+                onDelete={handleDeleteKeyResult}
               />
               <TablePagination
                 component="div"
@@ -216,10 +344,10 @@ const KeyResults = () => {
           <KeyResultForm
             initialValues={{
               ...defaultFormValues,
-              objective_id: selectedObjective,
+              objective_id: selectedObjective || '',
             }}
             objectives={objectives}
-            onSubmit={() => {}}
+            onSubmit={handleAddKeyResult}
             loading={actionLoading}
           />
         </DialogContent>
@@ -244,7 +372,7 @@ const KeyResults = () => {
             <KeyResultForm
               initialValues={selectedKR}
               objectives={objectives}
-              onSubmit={() => {}}
+              onSubmit={handleEditKeyResult}
               loading={actionLoading}
             />
           )}

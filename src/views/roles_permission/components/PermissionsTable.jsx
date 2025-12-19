@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { TableContainer, Paper, useTheme, Box, Typography, Grid, Divider, Tooltip } from '@mui/material';
+import {
+  TableContainer,
+  Paper,
+  useTheme,
+  Box,
+  Typography,
+  Grid,
+  Divider,
+  Tooltip,
+} from '@mui/material';
 import Backend from 'services/backend';
 import Fallbacks from 'utils/components/Fallbacks';
 import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
@@ -20,12 +29,12 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     fetch(Api, {
       method: 'GET',
-      headers: header
+      headers: header,
     })
       .then((response) => response.json())
       .then((response) => {
@@ -73,15 +82,26 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
         margin: 0,
         marginTop: 0,
         paddingY: 4,
-        backgroundColor: theme.palette.background.default
+        backgroundColor: theme.palette.background.default,
       }}
     >
       {permissionLoading ? (
-        <Box sx={{ padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            padding: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <ActivityIndicator size={20} />
         </Box>
       ) : error ? (
-        <Fallbacks severity="error" title="Server error" description="There is an error fetching Permissions" />
+        <Fallbacks
+          severity="error"
+          title="Server error"
+          description="There is an error fetching Permissions"
+        />
       ) : Object.keys(groupedPermissions).length === 0 ? (
         <Fallbacks
           severity="info"
@@ -97,11 +117,15 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
                 sx={{
                   transition: 'transform 0.3s',
                   '&:hover': {
-                    transform: 'scale(1.05)'
-                  }
+                    transform: 'scale(1.05)',
+                  },
                 }}
               >
-                <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Typography variant="h4" fontWeight="bold" color="primary">
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </Typography>
@@ -117,7 +141,7 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
                       sx={{
                         marginBottom: 1,
                         padding: 0.5,
-                        borderRadius: 1
+                        borderRadius: 1,
                       }}
                     >
                       <Tooltip title={perm.name} placement="top">
@@ -127,7 +151,7 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
                           sx={{
                             maxWidth: '180px',
                             textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
+                            whiteSpace: 'nowrap',
                           }}
                         >
                           {perm.name}

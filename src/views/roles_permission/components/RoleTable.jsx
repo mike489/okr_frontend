@@ -2,27 +2,19 @@ import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
-  CircularProgress,
   Divider,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Menu,
-  MenuItem,
   Paper,
   Typography,
   TextField,
   useTheme,
-  ListItemIcon,
   Checkbox,
   Grid,
-  Card,
-  CardHeader,
-  CardContent,
   Chip,
-  InputLabel
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { DotMenu } from 'ui-component/menu/DotMenu';
@@ -50,26 +42,26 @@ const RoleTable = ({ searchQuery }) => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [editedRole, setEditedRole] = useState({ name: '' });
   const [submitting, setSubmitting] = useState(false);
-  const [allPermissions, setAllPermissions] = useState([]); // To store all available permissions
+  const [allPermissions, setAllPermissions] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
-  const filteredRoles = roles.filter((role) => role.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredRoles = roles.filter((role) =>
+    role.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const handleFetchingRole = () => {
     setRoleLoading(true);
     const token = localStorage.getItem('token');
-  const Api = Backend.pmsUrl(Backend.roles);
-
-
+    const Api = Backend.pmsUrl(Backend.roles);
 
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     fetch(Api, {
       method: 'GET',
-      headers: header
+      headers: header,
     })
       .then((response) => response.json())
       .then((response) => {
@@ -85,13 +77,18 @@ const RoleTable = ({ searchQuery }) => {
       });
   };
 
-  const filteredPermissions = Object.keys(allPermissions).reduce((acc, type) => {
-    const filtered = allPermissions[type].filter((perm) => perm.name.toLowerCase().includes(search.toLowerCase()));
-    if (filtered.length > 0) {
-      acc[type] = filtered;
-    }
-    return acc;
-  }, {});
+  const filteredPermissions = Object.keys(allPermissions).reduce(
+    (acc, type) => {
+      const filtered = allPermissions[type].filter((perm) =>
+        perm.name.toLowerCase().includes(search.toLowerCase()),
+      );
+      if (filtered.length > 0) {
+        acc[type] = filtered;
+      }
+      return acc;
+    },
+    {},
+  );
 
   const handleSearchingPermission = (event) => {
     const value = event.target.value;
@@ -129,12 +126,12 @@ const RoleTable = ({ searchQuery }) => {
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     fetch(Api, {
       method: 'GET',
-      headers: header
+      headers: header,
     })
       .then((response) => response.json())
       .then((response) => {
@@ -187,19 +184,19 @@ const RoleTable = ({ searchQuery }) => {
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     // Prepare the payload with role name and selected permissions
     const payload = {
       name: editedRole.name,
-      permissions: selectedPermissions // Send the updated list of permissions
+      permissions: selectedPermissions, // Send the updated list of permissions
     };
 
     fetch(Api, {
       method: 'PATCH',
       headers: header,
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
       .then((response) => response.json())
       .then((response) => {
@@ -223,17 +220,19 @@ const RoleTable = ({ searchQuery }) => {
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     fetch(Api, {
       method: 'DELETE',
-      headers: header
+      headers: header,
     })
       .then((response) => response.json())
       .then((response) => {
         if (response.success) {
-          setRoles((prevRoles) => prevRoles.filter((role) => role.uuid !== roleId));
+          setRoles((prevRoles) =>
+            prevRoles.filter((role) => role.uuid !== roleId),
+          );
           toast.success(response?.data?.message);
           handleFetchingRole();
         } else {
@@ -269,7 +268,7 @@ const RoleTable = ({ searchQuery }) => {
         border: 0.4,
         borderColor: theme.palette.divider,
         borderRadius: 2,
-        p: 2
+        p: 2,
       }}
     >
       {roleLoading ? (
@@ -278,15 +277,23 @@ const RoleTable = ({ searchQuery }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            minHeight: '40dvh'
+            minHeight: '40dvh',
           }}
         >
           <ActivityIndicator size={20} />
         </Box>
       ) : error ? (
-        <Fallbacks severity="error" title="Server error" description="There is an error fetching Roles" />
+        <Fallbacks
+          severity="error"
+          title="Server error"
+          description="There is an error fetching Roles"
+        />
       ) : filteredRoles.length === 0 ? (
-        <Fallbacks severity="info" title="No Roles Found" description="The list of added Roles will be listed here" />
+        <Fallbacks
+          severity="info"
+          title="No Roles Found"
+          description="The list of added Roles will be listed here"
+        />
       ) : (
         filteredRoles.map((role, index) => (
           <Box key={role.uuid} onClick={() => handleOpenRole(index)}>
@@ -295,12 +302,21 @@ const RoleTable = ({ searchQuery }) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: selectedIndex === index && theme.palette.primary.main,
+                backgroundColor:
+                  selectedIndex === index && theme.palette.primary.main,
                 p: 1.4,
-                borderRadius: 2
+                borderRadius: 2,
               }}
             >
-              <Typography variant="h4" sx={{ color: selectedIndex === index ? 'white' : theme.palette.text.primary }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  color:
+                    selectedIndex === index
+                      ? 'white'
+                      : theme.palette.text.primary,
+                }}
+              >
                 {role.name}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -308,21 +324,39 @@ const RoleTable = ({ searchQuery }) => {
                   orientation="horizontal"
                   onEdit={() => handleOpenEditModal(role)}
                   onDelete={() => handleDelete(role.uuid)}
-                  sx={{ color: selectedIndex === index ? 'white' : theme.palette.text.primary }}
+                  sx={{
+                    color:
+                      selectedIndex === index
+                        ? 'white'
+                        : theme.palette.text.primary,
+                  }}
                 />
 
-                <IconButton onClick={() => handleOpenRole(index)} sx={{ marginLeft: 2 }}>
+                <IconButton
+                  onClick={() => handleOpenRole(index)}
+                  sx={{ marginLeft: 2 }}
+                >
                   {selectedIndex === index ? (
                     <IconChevronDown
                       size="1.2rem"
                       stroke="1.4"
-                      style={{ color: selectedIndex === index ? 'white' : theme.palette.text.primary }}
+                      style={{
+                        color:
+                          selectedIndex === index
+                            ? 'white'
+                            : theme.palette.text.primary,
+                      }}
                     />
                   ) : (
                     <IconChevronRight
                       size="1.2rem"
                       stroke="1.4"
-                      style={{ color: selectedIndex === index ? 'white' : theme.palette.text.primary }}
+                      style={{
+                        color:
+                          selectedIndex === index
+                            ? 'white'
+                            : theme.palette.text.primary,
+                      }}
                     />
                   )}
                 </IconButton>
@@ -330,80 +364,112 @@ const RoleTable = ({ searchQuery }) => {
             </Box>
             {selectedIndex === index && (
               <Box sx={{ mb: 1, transition: 'all 0.6s ease' }}>
-                <Divider sx={{ borderBottom: 0.4, borderColor: theme.palette.divider, my: 2 }} />
-                {Object.entries(groupPermissionsByType(role.permissions)).map(([type, perms], i) => (
-                  <Box key={i} sx={{ mb: 3 }}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        textTransform: 'capitalize',
-                        mb: 2,
-                        color: theme.palette.primary.main,
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      Assigned Permissions
-                    </Typography>
+                <Divider
+                  sx={{
+                    borderBottom: 0.4,
+                    borderColor: theme.palette.divider,
+                    my: 2,
+                  }}
+                />
+                {Object.entries(groupPermissionsByType(role.permissions)).map(
+                  ([type, perms], i) => (
+                    <Box key={i} sx={{ mb: 3 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          textTransform: 'capitalize',
+                          mb: 2,
+                          color: theme.palette.primary.main,
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        Assigned Permissions
+                      </Typography>
 
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                        gap: 2
-                      }}
-                    >
-                      {perms.map((perm, idx) => (
-                        <Paper
-                          key={idx}
-                          elevation={1}
-                          sx={{
-                            padding: 2,
-                            borderRadius: 2,
-                            backgroundColor: theme.palette.background.paper,
-                            transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                            '&:hover': {
-                              transform: 'scale(1.02)',
-                              boxShadow: theme.shadows[8]
-                            }
-                          }}
-                        >
-                          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                            {perm.name}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            {perm.description || 'No description available'}
-                          </Typography>
-                          <Chip
-                            label="Assigned"
-                            size="small"
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns:
+                            'repeat(auto-fill, minmax(200px, 1fr))',
+                          gap: 2,
+                        }}
+                      >
+                        {perms.map((perm, idx) => (
+                          <Paper
+                            key={idx}
+                            elevation={1}
                             sx={{
-                              mt: 1,
-                              fontSize: '0.75rem',
-                              backgroundColor: theme.palette.primary.light,
-                              color: theme.palette.success.dark
+                              padding: 2,
+                              borderRadius: 2,
+                              backgroundColor: theme.palette.background.paper,
+                              transition:
+                                'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                              '&:hover': {
+                                transform: 'scale(1.02)',
+                                boxShadow: theme.shadows[8],
+                              },
                             }}
-                          />
-                        </Paper>
-                      ))}
+                          >
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: 'bold', mb: 1 }}
+                            >
+                              {perm.name}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary">
+                              {perm.description || 'No description available'}
+                            </Typography>
+                            <Chip
+                              label="Assigned"
+                              size="small"
+                              sx={{
+                                mt: 1,
+                                fontSize: '0.75rem',
+                                backgroundColor: theme.palette.primary.light,
+                                color: theme.palette.success.dark,
+                              }}
+                            />
+                          </Paper>
+                        ))}
+                      </Box>
                     </Box>
-                  </Box>
-                ))}
+                  ),
+                )}
               </Box>
             )}
-            <Divider sx={{ borderBottom: 0.4, borderColor: theme.palette.divider, my: 0.8 }} />
+            <Divider
+              sx={{
+                borderBottom: 0.4,
+                borderColor: theme.palette.divider,
+                my: 0.8,
+              }}
+            />
           </Box>
         ))
       )}
 
       {/* Edit Modal */}
-      <Dialog open={openEditModal} onClose={handleCloseEditModal} fullWidth={true} maxWidth="lg">
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', m: 3, mb: 1 }}>
+      <Dialog
+        open={openEditModal}
+        onClose={handleCloseEditModal}
+        fullWidth={true}
+        maxWidth="lg"
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            m: 3,
+            mb: 1,
+          }}
+        >
           <Typography variant="h3">Edit Role</Typography>
 
           <motion.div
             whileHover={{
-              rotate: 90
+              rotate: 90,
             }}
             transition={{ duration: 0.3 }}
             style={{ cursor: 'pointer', marginRight: 10 }}
@@ -415,7 +481,14 @@ const RoleTable = ({ searchQuery }) => {
 
         <DialogContent>
           <Box>
-            <TextField label="Role Name" name="name" value={editedRole.name} onChange={handleEditChange} fullWidth margin="dense" />
+            <TextField
+              label="Role Name"
+              name="name"
+              value={editedRole.name}
+              onChange={handleEditChange}
+              fullWidth
+              margin="dense"
+            />
 
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
@@ -426,11 +499,24 @@ const RoleTable = ({ searchQuery }) => {
               </Grid>
 
               <Grid item xs={12} mb={1}>
-                <Search title="Search Permissions" filter={false} value={search} onChange={handleSearchingPermission}></Search>
+                <Search
+                  title="Search Permissions"
+                  filter={false}
+                  value={search}
+                  onChange={handleSearchingPermission}
+                ></Search>
               </Grid>
               {permLoading ? (
                 <Grid container>
-                  <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Grid
+                    item
+                    xs={12}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <ActivityIndicator size={20} />
                   </Grid>
                 </Grid>
@@ -443,8 +529,8 @@ const RoleTable = ({ searchQuery }) => {
                       sx={{
                         transition: 'transform 0.2s',
                         '&:hover': {
-                          transform: 'scale(1.01)'
-                        }
+                          transform: 'scale(1.01)',
+                        },
                       }}
                     >
                       {filteredPermissions[type].map((permission) => (
@@ -457,16 +543,25 @@ const RoleTable = ({ searchQuery }) => {
                             borderRadius: '2px',
                             transition: 'background-color 0.3s',
                             '&:hover': {
-                              backgroundColor: '#f0f0f0'
-                            }
+                              backgroundColor: '#f0f0f0',
+                            },
                           }}
                         >
                           <Checkbox
-                            checked={selectedPermissions.includes(permission.id)}
-                            onChange={() => handlePermissionChange(permission.id)}
+                            checked={selectedPermissions.includes(
+                              permission.id,
+                            )}
+                            onChange={() =>
+                              handlePermissionChange(permission.id)
+                            }
                           />
 
-                          <Typography sx={{ ml: 1, cursor: 'pointer' }} onClick={() => handlePermissionChange(permission.id)}>
+                          <Typography
+                            sx={{ ml: 1, cursor: 'pointer' }}
+                            onClick={() =>
+                              handlePermissionChange(permission.id)
+                            }
+                          >
                             {permission.name}
                           </Typography>
                         </Box>
@@ -481,7 +576,13 @@ const RoleTable = ({ searchQuery }) => {
         <DialogActions>
           <Button onClick={handleCloseEditModal}>Cancel</Button>
           <DrogaButton
-            title={submitting ? <ActivityIndicator size={16} sx={{ color: 'white' }} /> : 'Save Changes'}
+            title={
+              submitting ? (
+                <ActivityIndicator size={16} sx={{ color: 'white' }} />
+              ) : (
+                'Save Changes'
+              )
+            }
             onPress={handleSaveEdit}
             color="primary"
           />
@@ -502,7 +603,9 @@ const RoleTable = ({ searchQuery }) => {
             {selectedRole?.permissions.length === 0 ? (
               <Typography>No permissions assigned</Typography>
             ) : (
-              selectedRole?.permissions.map((perm) => <Chip key={perm.uuid} label={perm.name} sx={{ mr: 1, mb: 1 }} />)
+              selectedRole?.permissions.map((perm) => (
+                <Chip key={perm.uuid} label={perm.name} sx={{ mr: 1, mb: 1 }} />
+              ))
             )}
           </Box>
         </DialogContent>

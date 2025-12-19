@@ -26,7 +26,8 @@ const Plan = () => {
     (state) => state.customization.selectedFiscalYear,
   );
 
-  const { handleUpdateObjective } = useKPI(); // Changed
+  console.log('selectedYear', selectedYear);
+  const { handleUpdateObjective } = useKPI();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
@@ -34,13 +35,16 @@ const Plan = () => {
   const [error, setError] = useState(false);
   const [units, setUnits] = useState([]);
   const [create, setCreate] = useState(false);
-  const [selectedObjective, setSelectedObjective] = useState(null); // Changed
+  const [selectedObjective, setSelectedObjective] = useState(null);
   const [update, setUpdate] = useState(false);
-  const [selectedObjectiveID, setSelectedObjectiveID] = useState(null); // Changed
-  const [deleteObjective, setDeleteObjective] = useState(false); // Changed
+  const [selectedObjectiveID, setSelectedObjectiveID] = useState(null);
+  const [deleteObjective, setDeleteObjective] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState('');
   const [keyResults, setKeyResults] = useState([]);
+  const [keyResultModal, setKeyResultModal] = useState(false);
+  const [selectedObjectiveForKR, setSelectedObjectiveForKR] = useState(null);
+  const [isCreatingKR, setIsCreatingKR] = useState(false);
 
   const [pagination, setPagination] = useState({
     page: 0,
@@ -126,6 +130,15 @@ const Plan = () => {
     };
 
     try {
+      // Validate that a fiscal year is selected
+      if (!selectedYear?.id) {
+        toast.error(
+          'Please select a fiscal year before distributing objectives',
+        );
+        setIsCreating(false);
+        return;
+      }
+
       const data = {
         assigned_to: value.unit_id,
         key_results: value.plans.map((plan) => ({
@@ -137,6 +150,8 @@ const Plan = () => {
           })),
         })),
         notes: value.notes || 'Increase sales by 10%',
+        fiscal_year_id: selectedYear.id, // Add fiscal year ID to the payload
+        fiscal_year_name: selectedYear.year, // Optional: Add fiscal year name for reference
       };
 
       console.log('Sending payload:', JSON.stringify(data, null, 2));
@@ -149,14 +164,27 @@ const Plan = () => {
 
       if (response?.success) {
         toast.success(
-          response?.data?.message || 'Objective assigned successfully.',
+          response?.data?.message ||
+            `Objective assigned successfully for ${selectedYear.year}.`,
         );
         handleCreateModalClose();
         handleFetchingObjectives(); // Refresh the list
       } else {
-        toast.error(response?.data?.message || 'Failed to assign objective.');
+        // Check if error is related to fiscal year
+        const errorMessage =
+          response?.data?.message || 'Failed to assign objective.';
+
+        if (
+          errorMessage.toLowerCase().includes('fiscal') ||
+          errorMessage.toLowerCase().includes('year')
+        ) {
+          toast.error(`Fiscal year error: ${errorMessage}`);
+        } else {
+          toast.error(errorMessage);
+        }
       }
     } catch (error) {
+      console.error('Error in objective addition:', error);
       toast.error(error.message || 'An unexpected error occurred.');
     } finally {
       setIsCreating(false);
@@ -284,36 +312,64 @@ const Plan = () => {
   // };
 
   const handleFetchingObjectives = async () => {
-    setLoading(true);
-    const token = await GetToken();
-    const Api =
-      Backend.pmsUrl(Backend.objectives) +
-      `?page=${pagination.page + 1}&per_page=${pagination.per_page}&search=${search}`;
-
     try {
-      const response = await fetch(Api, {
+      setLoading(true);
+      const token = await GetToken();
+
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        page: pagination.page + 1,
+        per_page: pagination.per_page,
+      });
+
+      if (search) {
+        queryParams.append('search', search);
+      }
+
+      if (selectedYear?.id) {
+        queryParams.append('fiscal_year_id', selectedYear.id);
+      }
+
+      const Api = `${Backend.pmsUrl(Backend.myObjectives)}?${queryParams.toString()}`;
+      console.log('📡 Fetching objectives with URL:', Api);
+
+      const res = await fetch(Api, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
           Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
       });
-      const responseData = await response.json();
 
-      if (responseData.success) {
-        setData(responseData.data.data);
-        setPagination({
-          ...pagination,
-          last_page: responseData.data.last_page,
-          total: responseData.data.total,
-        });
+      const response = await res.json();
+      console.log('✅ API Response:', response);
+
+      if (response.success && response.data) {
+        const paginationData = response.data;
+
+        // Handle different response structures
+        const objectivesData = paginationData.data || paginationData || [];
+
+        setData(Array.isArray(objectivesData) ? objectivesData : []);
+        setPagination((prev) => ({
+          ...prev,
+          page: (paginationData.current_page || 1) - 1,
+          per_page: paginationData.per_page || prev.per_page,
+          total: paginationData.total || objectivesData.length || 0,
+          last_page: paginationData.last_page || 1,
+        }));
+        setError(false);
       } else {
-        toast.error(responseData.message || 'Failed to fetch objectives');
+        toast.warning(response?.message || 'Failed to fetch objectives');
+        setData([]);
+        setError(false);
       }
     } catch (error) {
+      console.error('❌ Fetch Error:', error);
       toast.error(error.message || 'Failed to fetch objectives');
       setError(true);
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -354,10 +410,69 @@ const Plan = () => {
     }
   };
 
+  const handleCreateKeyResult = async (values) => {
+    setIsCreatingKR(true);
+    const token = await GetToken();
+    const Api = Backend.pmsUrl(Backend.keyResults);
+
+    const header = {
+      Authorization: `Bearer ${token}`,
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      // Prepare payload based on your API requirements
+      const payload = {
+        objective_id: values.objective_id,
+        name: values.name,
+        metric_unit: values.metric_unit,
+        target_type: values.target_type,
+        start_value: parseFloat(values.start_value),
+        current_value: parseFloat(values.current_value),
+        target_value: parseFloat(values.target_value),
+        weight: parseFloat(values.weight),
+        confidence: 5, // Default value, adjust as needed
+        calc_method: 'manual', // Default value, adjust as needed
+      };
+
+      const response = await fetch(Api, {
+        method: 'POST',
+        headers: header,
+        body: JSON.stringify(payload),
+      }).then((res) => res.json());
+
+      if (response?.success) {
+        toast.success('Key Result created successfully!');
+        handleKeyResultModalClose();
+        handleFetchingObjectives(); // Refresh objectives to show new key result
+      } else {
+        toast.error(response?.message || 'Failed to create key result.');
+      }
+    } catch (error) {
+      console.error('Error creating key result:', error);
+      toast.error(error.message || 'An unexpected error occurred.');
+    } finally {
+      setIsCreatingKR(false);
+    }
+  };
+
+  // Add this function to close the modal
+  const handleKeyResultModalClose = () => {
+    setKeyResultModal(false);
+    setSelectedObjectiveForKR(null);
+  };
+
+  // Add this function to open the modal
+  const handleOpenKeyResultModal = (objective) => {
+    setSelectedObjectiveForKR(objective);
+    setKeyResultModal(true);
+  };
+
   useEffect(() => {
-    // if (selectedYear?.id) {
-    //   handleFetchingObjectives();
-    // }
+    if (selectedYear?.id) {
+      handleFetchingObjectives();
+    }
     handleFetchingObjectives();
     handleFetchingUnits();
     handleFetchKeyResults();
@@ -376,7 +491,7 @@ const Plan = () => {
 
   return (
     <PageContainer
-      title={'Objectives & Key Results'}
+      title={'My Objectives'}
       searchField={
         <Search
           value={search}
@@ -443,6 +558,11 @@ const Plan = () => {
                 setSelectedObjective(objective);
                 setDeleteObjective(true);
               }}
+              onAddKeyResult={(objective) => {
+                setSelectedObjectiveForKR(objective);
+                setKeyResultModal(true);
+              }}
+              onRefresh={() => handleFetchingObjectives()}
             />
           </Grid>
         </Grid>

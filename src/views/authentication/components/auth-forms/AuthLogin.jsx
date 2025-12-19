@@ -132,7 +132,7 @@ const AuthLogin = ({ ...others }) => {
         dispatch(StoreUserUnit());
         dispatch({ type: SIGN_IN, signed: true });
 
-        navigate('/dashboard');
+        navigate('/');
       } else {
         setErrors({
           submit:

@@ -8,52 +8,55 @@ import GetFiscalYear from 'utils/components/GetFiscalYear';
 
 const FiscalYearSelector = () => {
   const theme = useTheme();
-  const SelectFiscalYear = useSelector((state) => state.customization.selectedFiscalYear);
-  const fiscalYears = useSelector((state) => state.customization.fiscalYears);
-console.log('fiscalYears', fiscalYears);
-  console.log('SelectFiscalYear', SelectFiscalYear);
-  const [selectedYearId, setSelectedYearId] = useState(SelectFiscalYear?.id || null);
   const dispatch = useDispatch();
-console.log('selectedYearId', selectedYearId);
+
+  const selectedFiscalYear = useSelector(
+    (state) => state.customization.selectedFiscalYear,
+  );
+  const fiscalYears = useSelector((state) => state.customization.fiscalYears);
+
   const handleYearSelection = (year) => {
-    if (SelectFiscalYear?.id === year.id) {
-      setSelectedYearId(null);
-    } else {
-      dispatch({ type: SET_SELECTED_FISCAL_YEAR, selectedFiscalYear: year });
-      setSelectedYearId(year.id);
-    }
+    dispatch({
+      type: SET_SELECTED_FISCAL_YEAR,
+      selectedFiscalYear: year,
+    });
   };
+
+  // Fetch fiscal years if not already loaded
+  if (!fiscalYears || fiscalYears.length === 0) {
+    return <GetFiscalYear />;
+  }
 
   return (
     <React.Fragment>
-      {fiscalYears?.length > 0 ? (
-        fiscalYears?.map((year, index) => (
-          <Box
-            key={index}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingY: 2.2,
-              paddingX: 2,
-              border: 0.6,
-              borderRadius: 2,
-              borderColor: theme.palette.primary.main,
-              backgroundColor: theme.palette.grey[50],
-              cursor: 'pointer',
-              marginY: 1.6
-            }}
-            onClick={() => handleYearSelection(year)}
-          >
-            <Typography variant="h4">{year.year}</Typography>
+      {fiscalYears.map((year) => (
+        <Box
+          key={year.id}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingY: 2.2,
+            paddingX: 2,
+            border: 0.6,
+            borderRadius: 2,
+            borderColor: theme.palette.primary.main,
+            backgroundColor: theme.palette.grey[50],
+            cursor: 'pointer',
+            marginY: 1.6,
+          }}
+          onClick={() => handleYearSelection(year)}
+        >
+          <Typography variant="h4">{year.year}</Typography>
 
-            {selectedYearId === year.id && <IconCircleCheckFilled size={24} style={{ color: theme.palette.primary.main }} />}
-          </Box>
-        ))
-      ) : (
-        <GetFiscalYear />
-      )}
-
+          {selectedFiscalYear?.id === year.id && (
+            <IconCircleCheckFilled
+              size={24}
+              style={{ color: theme.palette.primary.main }}
+            />
+          )}
+        </Box>
+      ))}
       <ToastContainer />
     </React.Fragment>
   );
