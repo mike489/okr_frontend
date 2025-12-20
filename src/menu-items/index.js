@@ -9,7 +9,7 @@ import { company } from './company';
 const menuItems = {
   items: [
     dashboard(),
-    company(),
+    // company(),
     getOrgStructure(),
     reports(),
     Accounts(),

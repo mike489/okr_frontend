@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
-import { Modal, Box, Button, TextField, Checkbox, FormControlLabel, CircularProgress, Typography, Grid } from '@mui/material';
+import {
+  Modal,
+  Box,
+  Button,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  CircularProgress,
+  Typography,
+  Grid,
+} from '@mui/material';
 import { toast } from 'react-toastify';
 import { Formik, Form, Field, FieldArray } from 'formik';
 import { motion } from 'framer-motion';
@@ -16,7 +26,9 @@ import ActivityIndicator from 'ui-component/indicators/ActivityIndicator';
 
 const roleSchema = Yup.object().shape({
   roleName: Yup.string().required('Role name is required'),
-  permissions: Yup.array().of(Yup.string()).min(1, 'At least one permission is required')
+  permissions: Yup.array()
+    .of(Yup.string())
+    .min(1, 'At least one permission is required'),
 });
 
 const AddRole = ({ open, handleClose, onSave, submitting }) => {
@@ -31,7 +43,9 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
   };
 
   const filteredPermissions = Object.keys(permissions).reduce((acc, type) => {
-    const filtered = permissions[type].filter((perm) => perm.name.toLowerCase().includes(search.toLowerCase()));
+    const filtered = permissions[type].filter((perm) =>
+      perm.name.toLowerCase().includes(search.toLowerCase()),
+    );
     if (filtered.length > 0) {
       acc[type] = filtered;
     }
@@ -46,12 +60,12 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     fetch(Api, {
       method: 'GET',
-      headers: header
+      headers: header,
     })
       .then((response) => response.json())
       .then((response) => {
@@ -59,7 +73,7 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
           const permissionsData = response.data;
 
           const grouped = permissionsData.reduce((acc, perm) => {
-            const type = perm.name.split(':')[1];
+            const type = perm.name.split('_')[1];
             if (!acc[type]) {
               acc[type] = [];
             }
@@ -85,7 +99,7 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
       onClose={handleClose}
       sx={{
         backdropFilter: 'blur(10px)',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
       }}
       fullWidth={true}
       maxWidth="lg"
@@ -102,15 +116,22 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
           bgcolor: 'background.paper',
           boxShadow: 24,
           borderRadius: 2,
-          p: 3
+          p: 3,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 1,
+          }}
+        >
           <Typography variant="h3">Add Role</Typography>
 
           <motion.div
             whileHover={{
-              rotate: 90
+              rotate: 90,
             }}
             transition={{ duration: 0.3 }}
             style={{ cursor: 'pointer', marginRight: 10 }}
@@ -124,7 +145,10 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
           validationSchema={roleSchema}
           onSubmit={(values, { setSubmitting, setFieldError }) => {
             if (values.permissions.length === 0) {
-              setFieldError('permissions', 'Please select at least one permission.');
+              setFieldError(
+                'permissions',
+                'Please select at least one permission.',
+              );
               setSubmitting(false);
               return;
             }
@@ -160,7 +184,12 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
                 Attach Permissions
               </Typography>
 
-              <Search title="Search Permissions" filter={false} value={search} onChange={handleSearchingPermission}></Search>
+              <Search
+                title="Search Permissions"
+                filter={false}
+                value={search}
+                onChange={handleSearchingPermission}
+              ></Search>
 
               <Grid container spacing={2} mt={0.5}>
                 {permissionLoading ? (
@@ -169,13 +198,17 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
                       padding: 2,
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
                     }}
                   >
                     <CircularProgress size={20} />
                   </Box>
                 ) : error ? (
-                  <Fallbacks severity="error" title="Server error" description="There is an error fetching Permissions" />
+                  <Fallbacks
+                    severity="error"
+                    title="Server error"
+                    description="There is an error fetching Permissions"
+                  />
                 ) : Object.keys(permissions).length === 0 ? (
                   <Fallbacks
                     severity="info"
@@ -199,15 +232,24 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
                                     name="permissions"
                                     value={perm.name}
                                     as={Checkbox}
-                                    checked={values.permissions.includes(perm.name)}
+                                    checked={values.permissions.includes(
+                                      perm.name,
+                                    )}
                                     onChange={() => {
-                                      if (values.permissions.includes(perm.name)) {
+                                      if (
+                                        values.permissions.includes(perm.name)
+                                      ) {
                                         setFieldValue(
                                           'permissions',
-                                          values.permissions.filter((p) => p !== perm.name)
+                                          values.permissions.filter(
+                                            (p) => p !== perm.name,
+                                          ),
                                         );
                                       } else {
-                                        setFieldValue('permissions', [...values.permissions, perm.name]);
+                                        setFieldValue('permissions', [
+                                          ...values.permissions,
+                                          perm.name,
+                                        ]);
                                       }
                                     }}
                                   />
@@ -224,7 +266,15 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
               </Grid>
 
               <Grid container>
-                <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <Grid
+                  item
+                  xs={12}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                  }}
+                >
                   <Button
                     onClick={() => {
                       resetForm();
@@ -237,7 +287,13 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
                   </Button>
 
                   <DrogaButton
-                    title={submitting ? <ActivityIndicator size={16} sx={{ color: 'white' }} /> : 'Submit'}
+                    title={
+                      submitting ? (
+                        <ActivityIndicator size={16} sx={{ color: 'white' }} />
+                      ) : (
+                        'Submit'
+                      )
+                    }
                     type="submit"
                     variant="contained"
                     color="primary"
@@ -256,7 +312,7 @@ const AddRole = ({ open, handleClose, onSave, submitting }) => {
                     padding: '8px',
                     borderRadius: '4px',
                     border: '1px solid red',
-                    textAlign: 'center'
+                    textAlign: 'center',
                   }}
                 >
                   {errors.permissions}

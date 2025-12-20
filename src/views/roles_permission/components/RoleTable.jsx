@@ -16,7 +16,7 @@ import {
   Grid,
   Chip,
 } from '@mui/material';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { DotMenu } from 'ui-component/menu/DotMenu';
 import { IconChevronDown, IconChevronRight, IconX } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
@@ -116,13 +116,13 @@ const RoleTable = ({ searchQuery }) => {
     setPermLoading(true);
     setEditedRole({ name: role.name });
     setSelectedRole(role);
-    setSelectedPermissions(role.permissions.map((perm) => perm.uuid)); // Map current permissions to the UUIDs
+    setSelectedPermissions(role.permissions.map((perm) => perm.uuid));
     setOpenEditModal(true);
     handleCloseMenu();
 
     // Fetch all permissions from the backend
     const token = localStorage.getItem('token');
-    const Api = Backend.auth + Backend.permissi; // Assuming this is the correct endpoint
+    const Api = Backend.pmsUrl(Backend.permissions);
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
@@ -139,7 +139,7 @@ const RoleTable = ({ searchQuery }) => {
           const permissionsData = response.data;
 
           const grouped = permissionsData.reduce((acc, perm) => {
-            const type = perm.name.split(':')[1];
+            const type = perm.name.split('_')[1];
             if (!acc[type]) {
               acc[type] = [];
             }
@@ -180,7 +180,7 @@ const RoleTable = ({ searchQuery }) => {
   const handleSaveEdit = async () => {
     setSubmitting(true);
     const token = await GetToken();
-    const Api = Backend.auth + Backend.roles + `/${selectedRole.uuid}`;
+    const Api = Backend.pmsUrl(Backend.roles) + `/${selectedRole.uuid}`;
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',
@@ -613,6 +613,7 @@ const RoleTable = ({ searchQuery }) => {
           <Button onClick={handleCloseDetailModal}>Close</Button>
         </DialogActions>
       </Dialog>
+      <ToastContainer />
     </Box>
   );
 };

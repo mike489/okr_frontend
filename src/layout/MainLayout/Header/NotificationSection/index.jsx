@@ -76,6 +76,7 @@ const NotificationSection = () => {
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
    * */
+
   const anchorRef = useRef(null);
 
   const handleToggle = () => {
@@ -93,8 +94,7 @@ const NotificationSection = () => {
     setLoading(true);
     const token = await GetToken();
     const Api =
-      Backend.auth +
-      Backend.myNotification +
+      Backend.pmsUrl(Backend.myNotification) +
       `?page=${pagination.page}&per_page=${pagination.per_page}&filter=${filter}`;
 
     const header = {
@@ -145,7 +145,9 @@ const NotificationSection = () => {
 
   const handleReadingNotification = async (notification) => {
     const token = await GetToken();
-    const Api = Backend.auth + Backend.readNotification + notification?.id;
+    const Api = Backend.pmsUrl(Backend.readNotification + notification?.id);
+
+    // const response = await fetch(Backend.pmsUrl(Backend.roles)
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',

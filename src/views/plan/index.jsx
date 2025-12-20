@@ -501,10 +501,10 @@ const Plan = () => {
       rightOption={
         // hasPermission('create:objective') && (
         <Box display="flex" flexDirection="row" alignItems="center" gap={2}>
-          <SplitButton
+          {/* <SplitButton
             options={['Distribute']}
             handleSelection={(value) => handleObjectiveAdd(value)}
-          />
+          /> */}
         </Box>
         // )
       }

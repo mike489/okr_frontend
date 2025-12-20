@@ -44,7 +44,7 @@ const PermissionsTable = ({ onPermissionsFetch }) => {
           const permissionsData = response.data;
 
           const grouped = permissionsData.reduce((acc, perm) => {
-            const type = perm.name.split(':')[1];
+            const type = perm.name.split('_')[1];
             if (!acc[type]) {
               acc[type] = [];
             }

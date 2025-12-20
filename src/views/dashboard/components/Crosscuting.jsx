@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Chart from 'react-apexcharts';
-import { Paper, Box, Typography, Grid, CircularProgress, Alert } from '@mui/material';
+import {
+  Paper,
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 import GetToken from 'utils/auth-token';
 import Backend from 'services/backend';
@@ -8,11 +15,11 @@ import Backend from 'services/backend';
 // -------------------------------------------------
 // Color helper
 const getColor = (value) => {
-  if (value >= 90) return '#00b050';     // Green
-  if (value >= 75) return '#92d050';     // Light Green
-  if (value >= 67) return '#ffff00';     // Yellow
-  if (value > 0) return '#ff0000';       // Red
-  return '#c00000';                      // Dark Red
+  if (value >= 90) return '#00b050'; // Green
+  if (value >= 75) return '#92d050'; // Light Green
+  if (value >= 67) return '#ffff00'; // Yellow
+  if (value > 0) return '#ff0000'; // Red
+  return '#c00000'; // Dark Red
 };
 
 // -------------------------------------------------
@@ -23,7 +30,9 @@ const Crosscutting = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const selectedYear = useSelector((state) => state.customization.selectedFiscalYear);
+  const selectedYear = useSelector(
+    (state) => state.customization.selectedFiscalYear,
+  );
 
   // -------------------------------------------------
   // FETCH ALL data
@@ -46,7 +55,7 @@ const Crosscutting = () => {
           per_page: String(ROWS_PER_PAGE),
         });
 
-        const url = `${Backend.api}${Backend.getPlanReports}?${params.toString()}`;
+        const url = `${Backend.pmsUrl}${Backend.getPlanReports}?${params.toString()}`;
         const resp = await fetch(url, {
           method: 'GET',
           headers: {
@@ -84,9 +93,10 @@ const Crosscutting = () => {
 
   // -------------------------------------------------
   // FILTER: Only Crosscutting programs
-  const crosscuttingData = data.filter(item => 
-    item.unit?.toLowerCase().includes('crosscutting') ||
-    item.type?.toLowerCase().includes('crosscutting')
+  const crosscuttingData = data.filter(
+    (item) =>
+      item.unit?.toLowerCase().includes('crosscutting') ||
+      item.type?.toLowerCase().includes('crosscutting'),
   );
 
   // -------------------------------------------------
@@ -116,14 +126,15 @@ const Crosscutting = () => {
   // -------------------------------------------------
   // Donut Chart (only Crosscutting)
   const donutChartData = {
-    series: programAverages.map(p => Math.round(p.AveragePercent)),
+    series: programAverages.map((p) => Math.round(p.AveragePercent)),
     options: {
       chart: { type: 'donut', height: 400 },
-      labels: programAverages.map(p => p.Program),
-      colors: programAverages.map(p => getColor(p.AveragePercent)),
+      labels: programAverages.map((p) => p.Program),
+      colors: programAverages.map((p) => getColor(p.AveragePercent)),
       dataLabels: {
         enabled: true,
-        formatter: (_, opts) => `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
+        formatter: (_, opts) =>
+          `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
         style: { fontSize: '14px', fontWeight: 'bold' },
       },
       legend: {
@@ -154,13 +165,16 @@ const Crosscutting = () => {
             labels: {
               show: true,
               value: {
-                formatter: (_, opts) => `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
+                formatter: (_, opts) =>
+                  `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
               },
               total: {
                 show: true,
                 label: 'Crosscutting Avg',
                 formatter: () => {
-                  const avg = programAverages.reduce((s, p) => s + p.AveragePercent, 0) / programAverages.length;
+                  const avg =
+                    programAverages.reduce((s, p) => s + p.AveragePercent, 0) /
+                    programAverages.length;
                   return `${Math.round(avg)}%`;
                 },
               },
@@ -185,7 +199,9 @@ const Crosscutting = () => {
   if (error) {
     return (
       <Box sx={{ maxWidth: 1200, margin: 'auto', p: 3 }}>
-        <Alert severity="error">Failed to load Crosscutting performance. Please try again.</Alert>
+        <Alert severity="error">
+          Failed to load Crosscutting performance. Please try again.
+        </Alert>
       </Box>
     );
   }
@@ -197,7 +213,8 @@ const Crosscutting = () => {
           Crosscutting Performance
         </Typography>
         <Typography sx={{ textAlign: 'center' }}>
-          No Crosscutting activities found for {selectedYear?.name || 'this year'}.
+          No Crosscutting activities found for{' '}
+          {selectedYear?.name || 'this year'}.
         </Typography>
       </Box>
     );
@@ -247,12 +264,15 @@ const Crosscutting = () => {
               variant="h5"
               fontWeight="bold"
               color={getColor(
-                programAverages.reduce((s, p) => s + p.AveragePercent, 0) / programAverages.length
+                programAverages.reduce((s, p) => s + p.AveragePercent, 0) /
+                  programAverages.length,
               )}
             >
               {Math.round(
-                programAverages.reduce((s, p) => s + p.AveragePercent, 0) / programAverages.length
-              )}%
+                programAverages.reduce((s, p) => s + p.AveragePercent, 0) /
+                  programAverages.length,
+              )}
+              %
             </Typography>
           </Paper>
         </Grid>

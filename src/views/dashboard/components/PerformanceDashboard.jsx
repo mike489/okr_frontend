@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Chart from 'react-apexcharts';
-import { Paper, Box, Typography, Grid, CircularProgress, Alert } from '@mui/material';
+import {
+  Paper,
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
 import { useSelector } from 'react-redux';
 import GetToken from 'utils/auth-token';
 import Backend from 'services/backend';
@@ -8,11 +15,11 @@ import Backend from 'services/backend';
 // -------------------------------------------------
 // Color helper
 const getColor = (value) => {
-  if (value >= 90) return '#00b050';     // Green
-  if (value >= 75) return '#92d050';     // Light Green
-  if (value >= 67) return '#ffff00';     // Yellow
-  if (value > 0) return '#ff0000';       // Red
-  return '#c00000';                      // Dark Red
+  if (value >= 90) return '#00b050'; // Green
+  if (value >= 75) return '#92d050'; // Light Green
+  if (value >= 67) return '#ffff00'; // Yellow
+  if (value > 0) return '#ff0000'; // Red
+  return '#c00000'; // Dark Red
 };
 
 // -------------------------------------------------
@@ -23,7 +30,9 @@ const PerformanceDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const selectedYear = useSelector((state) => state.customization.selectedFiscalYear);
+  const selectedYear = useSelector(
+    (state) => state.customization.selectedFiscalYear,
+  );
 
   // -------------------------------------------------
   // FETCH ALL data (we need full set for averages)
@@ -46,7 +55,7 @@ const PerformanceDashboard = () => {
           per_page: String(ROWS_PER_PAGE),
         });
 
-        const url = `${Backend.api}${Backend.getPlanReports}?${params.toString()}`;
+        const url = `${Backend.pmsUrl}${Backend.getPlanReports}?${params.toString()}`;
         const resp = await fetch(url, {
           method: 'GET',
           headers: {
@@ -109,7 +118,11 @@ const PerformanceDashboard = () => {
 
   // -------------------------------------------------
   // Exclude "Crosscutting" from bar charts
-  const desks = [...new Set(programAverages.map((p) => p.Desk).filter((d) => d !== 'Crosscutting'))];
+  const desks = [
+    ...new Set(
+      programAverages.map((p) => p.Desk).filter((d) => d !== 'Crosscutting'),
+    ),
+  ];
 
   const deskData = desks.map((desk) => ({
     Desk: desk,
@@ -208,13 +221,16 @@ const PerformanceDashboard = () => {
             labels: {
               show: true,
               value: {
-                formatter: (val, opts) => `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
+                formatter: (val, opts) =>
+                  `${Math.round(programAverages[opts.seriesIndex].AveragePercent)}%`,
               },
               total: {
                 show: true,
                 label: 'Overall Avg',
                 formatter: () => {
-                  const avg = programAverages.reduce((s, p) => s + p.AveragePercent, 0) / programAverages.length;
+                  const avg =
+                    programAverages.reduce((s, p) => s + p.AveragePercent, 0) /
+                    programAverages.length;
                   return `${Math.round(avg)}%`;
                 },
               },
@@ -239,7 +255,9 @@ const PerformanceDashboard = () => {
   if (error) {
     return (
       <Box sx={{ maxWidth: 1200, margin: 'auto', p: 3 }}>
-        <Alert severity="error">Failed to load performance data. Please try again.</Alert>
+        <Alert severity="error">
+          Failed to load performance data. Please try again.
+        </Alert>
       </Box>
     );
   }
@@ -250,7 +268,9 @@ const PerformanceDashboard = () => {
         <Typography variant="h4" sx={{ mb: 3, textAlign: 'center' }}>
           {selectedYear?.name || 'Program'} Performance
         </Typography>
-        <Typography sx={{ textAlign: 'center' }}>No data available to display.</Typography>
+        <Typography sx={{ textAlign: 'center' }}>
+          No data available to display.
+        </Typography>
       </Box>
     );
   }
@@ -286,7 +306,12 @@ const PerformanceDashboard = () => {
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Desk: {deskData[idx].Desk}
               </Typography>
-              <Chart options={chart.options} series={chart.series} type="bar" height={300} />
+              <Chart
+                options={chart.options}
+                series={chart.series}
+                type="bar"
+                height={300}
+              />
             </Paper>
           </Grid>
         ))}

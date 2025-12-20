@@ -31,7 +31,7 @@ const Page = () => {
         })
         .filter((uuid) => uuid !== null);
 
-      const  response = await fetch(Backend.pmsUrl(Backend.roles), {
+      const response = await fetch(Backend.pmsUrl(Backend.roles), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ const Page = () => {
   const handlePermissionsFetch = (fetchedPermissions) => {
     if (Array.isArray(fetchedPermissions)) {
       const grouped = fetchedPermissions.reduce((acc, perm) => {
-        const type = perm.name.split(':')[1]; // Extract permission type from name
+        const type = perm.name.split('_')[1];
         if (!acc[type]) {
           acc[type] = [];
         }

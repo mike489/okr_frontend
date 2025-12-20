@@ -75,30 +75,39 @@ const AdminDashboard = () => {
       });
   };
 
-  useEffect(() => {
-    handleFetchingStats();
-  }, [selectedYear]);
+  // useEffect(() => {
+  //   handleFetchingStats();
+  // }, [selectedYear]);
 
   return (
     <PageContainer title="Dashboard" rightOption={<DashboardSelector />}>
       <Grid container spacing={gridSpacing} justifyContent="center">
         {/* Overall Performance and Monthly Trends Row */}
-        <Grid item xs={24} justifyContent='space-center'>
-          <Grid container spacing={gridSpacing} justifyContent="space-center" gap={4} className='flex flex-row md:flex-row'>
+        <Grid item xs={24} justifyContent="space-center">
+          <Grid
+            container
+            spacing={gridSpacing}
+            justifyContent="space-center"
+            gap={4}
+            className="flex flex-row md:flex-row"
+          >
             {/* Overall Performance */}
-            <Box >
-              <DepartmentsTable />
-            </Box>
+            <Box>{/* <DepartmentsTable /> */}</Box>
           </Grid>
         </Grid>
-<Box sx={{ width: '100%', margin: 'auto', padding: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box>
-          <PerformanceDashboard />
+        <Box
+          sx={{
+            width: '100%',
+            margin: 'auto',
+            padding: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Box>{/* <PerformanceDashboard /> */}</Box>
+          <Box>{/* <Crosscutting /> */}</Box>
         </Box>
-<Box>
-  <Crosscutting />
-</Box>
-</Box>
       </Grid>
     </PageContainer>
   );

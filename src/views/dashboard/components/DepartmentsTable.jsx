@@ -35,7 +35,9 @@ const DepartmentsTable = () => {
 
   const [unitOptions, setUnitOptions] = useState([]);
 
-  const selectedYear = useSelector((state) => state.customization.selectedFiscalYear);
+  const selectedYear = useSelector(
+    (state) => state.customization.selectedFiscalYear,
+  );
 
   const months = [
     { value: 'January', label: 'January' },
@@ -60,98 +62,104 @@ const DepartmentsTable = () => {
   ];
 
   // Fetch units from backend
-const fetchUnits = useCallback(async () => {
-  try {
-    const token = await GetToken();
-    let allUnits = [];
-    let page = 1;
-    let lastPage = 1;
+  const fetchUnits = useCallback(async () => {
+    try {
+      const token = await GetToken();
+      let allUnits = [];
+      let page = 1;
+      let lastPage = 1;
 
-    do {
-      let url = `${Backend.api}${Backend.units}?page=${page}`;
-      if (selectedYear?.id) url += `&fiscal_year_id=${selectedYear.id}`;
+      do {
+        let url = `${Backend.pmsUrl}${Backend.units}?page=${page}`;
+        if (selectedYear?.id) url += `&fiscal_year_id=${selectedYear.id}`;
 
-      const resp = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          accept: 'application/json',
-        },
-      });
-      const json = await resp.json();
+        const resp = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+          },
+        });
+        const json = await resp.json();
 
-      if (json.success && json.data && Array.isArray(json.data.data)) {
-        allUnits = allUnits.concat(json.data.data);
-        page++;
-        lastPage = json.data.last_page || 1;
-      } else {
-        break;
-      }
-    } while (page <= lastPage);
+        if (json.success && json.data && Array.isArray(json.data.data)) {
+          allUnits = allUnits.concat(json.data.data);
+          page++;
+          lastPage = json.data.last_page || 1;
+        } else {
+          break;
+        }
+      } while (page <= lastPage);
 
-    setUnitOptions(allUnits);
-  } catch (err) {
-    console.error('Failed to fetch units:', err);
-    setUnitOptions([]);
-  }
-}, [selectedYear]);
-
+      setUnitOptions(allUnits);
+    } catch (err) {
+      console.error('Failed to fetch units:', err);
+      setUnitOptions([]);
+    }
+  }, [selectedYear]);
 
   const fetchPage = useCallback(
-  async (apiPage) => {
-    try {
-      setLoading(true);
-      setError(false);
-      const token = await GetToken();
+    async (apiPage) => {
+      try {
+        setLoading(true);
+        setError(false);
+        const token = await GetToken();
 
-      const params = new URLSearchParams();
-      if (selectedYear?.id) params.append('fiscal_year_id', selectedYear.id);
-      if (selectedMonth) params.append('month', selectedMonth); 
-      if (selectedUnit) params.append('unit_id', selectedUnit); 
-      if (selectedScale) params.append('scale', selectedScale);
-      params.append('page', apiPage);
-      params.append('per_page', ROWS_PER_PAGE);
+        const params = new URLSearchParams();
+        if (selectedYear?.id) params.append('fiscal_year_id', selectedYear.id);
+        if (selectedMonth) params.append('month', selectedMonth);
+        if (selectedUnit) params.append('unit_id', selectedUnit);
+        if (selectedScale) params.append('scale', selectedScale);
+        params.append('page', apiPage);
+        params.append('per_page', ROWS_PER_PAGE);
 
-      const url = `${Backend.api}${Backend.getPlanReports}?${params.toString()}`;
+        const url = `$${Backend.pmsUrl}${Backend.getPlanReports}?${params.toString()}`;
 
-      const resp = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
 
-      const json = await resp.json();
+        const json = await resp.json();
 
-      if (json.success && json.data) {
-        const { data, total, current_page } = json.data;
-        setRawData(Array.isArray(data) ? data : []);
-        setTotalItems(total || 0);
-        setPage(current_page || 1);
-      } else {
+        if (json.success && json.data) {
+          const { data, total, current_page } = json.data;
+          setRawData(Array.isArray(data) ? data : []);
+          setTotalItems(total || 0);
+          setPage(current_page || 1);
+        } else {
+          setRawData([]);
+          setError(true);
+        }
+      } catch (e) {
+        console.error('Fetch error:', e);
         setRawData([]);
         setError(true);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error('Fetch error:', e);
-      setRawData([]);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  },
-  [selectedYear, selectedMonth, selectedUnit, selectedScale]
-);
+    },
+    [selectedYear, selectedMonth, selectedUnit, selectedScale],
+  );
 
   useEffect(() => {
     if (selectedYear?.id) {
       fetchUnits();
-      fetchPage(1);
+      // fetchPage(1);
     }
-  }, [selectedYear, selectedMonth, selectedUnit, selectedScale, fetchPage, fetchUnits]);
+  }, [
+    selectedYear,
+    selectedMonth,
+    selectedUnit,
+    selectedScale,
+    // fetchPage,
+    fetchUnits,
+  ]);
 
-  const handlePageChange = (_, value) => fetchPage(value);
+  // const handlePageChange = (_, value) => fetchPage(value);
 
   const dataWithSN = rawData.map((item, idx) => ({
     ...item,
@@ -188,19 +196,18 @@ const fetchUnits = useCallback(async () => {
 
         <FormControl size="small" sx={{ minWidth: 160 }}>
           <InputLabel id="unit-select-label">Unit</InputLabel>
-         <Select
-  labelId="unit-select-label"
-  value={selectedUnit}
-  onChange={(e) => setSelectedUnit(e.target.value)}
->
-  <MenuItem value="">All Units</MenuItem>
-  {unitOptions.map((u) => (
-    <MenuItem key={u.id} value={u.id}>
-      {u.name}
-    </MenuItem>
-  ))}
-</Select>
-
+          <Select
+            labelId="unit-select-label"
+            value={selectedUnit}
+            onChange={(e) => setSelectedUnit(e.target.value)}
+          >
+            <MenuItem value="">All Units</MenuItem>
+            {unitOptions.map((u) => (
+              <MenuItem key={u.id} value={u.id}>
+                {u.name}
+              </MenuItem>
+            ))}
+          </Select>
         </FormControl>
 
         <FormControl size="small" sx={{ minWidth: 160 }}>
@@ -230,10 +237,18 @@ const fetchUnits = useCallback(async () => {
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold', width: '6%' }}>SN</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Unit</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>Type</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '40%' }}>Activity</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', textAlign: 'center', width: '12%' }}>
+              <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>
+                Unit
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '15%' }}>
+                Type
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '40%' }}>
+                Activity
+              </TableCell>
+              <TableCell
+                sx={{ fontWeight: 'bold', textAlign: 'center', width: '12%' }}
+              >
                 {selectedYear?.name || 'Performance (%)'}
               </TableCell>
             </TableRow>
@@ -255,7 +270,8 @@ const fetchUnits = useCallback(async () => {
                   <TableCell>{row.title}</TableCell>
                   <TableCell
                     sx={{
-                      backgroundColor: row.percentage_completed?.color || '#c00000',
+                      backgroundColor:
+                        row.percentage_completed?.color || '#c00000',
                       color: '#000',
                       fontWeight: 'bold',
                       textAlign: 'center',

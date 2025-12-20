@@ -65,8 +65,8 @@ const SuperAdminDashboard = () => {
   const handleFetchingRole = () => {
     setRoleLoading(true);
     const token = localStorage.getItem('token');
-    const Api = `${Backend.auth}${Backend.roles}`;
-
+    const Api = Backend.pmsUrl(Backend.roles);
+    // const response = await fetch(Backend.pmsUrl(Backend.roles)/
     const header = {
       Authorization: `Bearer ${token}`,
       accept: 'application/json',

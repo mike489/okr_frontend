@@ -105,8 +105,8 @@ export const dashboard = () => {
     'read:reporting',
     'read:activitytype',
 
-    'read_unit_type',
     'read_user_session',
+    'read_unit_type',
   ];
 
   const permissionMap = {
@@ -117,12 +117,12 @@ export const dashboard = () => {
       icon: icons.IconKey,
     },
 
-    read_objective: {
-      id: 'objective',
-      title: 'Objective',
-      url: '/objective',
-      icon: icons.IconTargetArrow,
-    },
+    // read_objective: {
+    //   id: 'objective',
+    //   title: 'Objective',
+    //   url: '/objective',
+    //   icon: icons.IconTargetArrow,
+    // },
 
     'read:initiative': {
       id: 'initiative',
@@ -138,19 +138,20 @@ export const dashboard = () => {
       icon: icons.IconRulerMeasure,
     },
 
-    read_key_result: {
-      id: 'key-result',
-      title: 'Key Result',
-      url: '/key-result',
-      icon: icons.IconList,
-    },
+    // read_key_result: {
+    //   id: 'key-result',
+    //   title: 'Key Result',
+    //   url: '/key-result',
+    //   icon: icons.IconList,
+    // },
 
-    read_okr_cycle: {
-      id: 'plan',
-      title: 'Distributed Plan',
-      url: '/main-activity',
-      icon: icons.IconTarget,
-    },
+    // read_okr_cycle: {
+    //   id: 'plan',
+    //   title: 'Distributed Plan',
+    //   url: '/main-activity',
+    //   icon: icons.IconTarget,
+    // },
+
     read_user_session: {
       id: 'Report',
       title: 'Report',
@@ -160,9 +161,10 @@ export const dashboard = () => {
     read_user_session: {
       id: 'My Objectives',
       title: 'My Objectives',
-      url: '/my-objectives',
+      url: '/main-activity',
       icon: icons.IconFileAnalytics,
     },
+
     'read:task-status': {
       id: 'task-status',
       title: 'Init',

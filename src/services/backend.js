@@ -48,6 +48,7 @@ const Backend = {
   setPassword: 'create-password',
   verifyOtp: 'verify-otp',
   changePassword: 'change-password',
+  getPlanReports: 'plan-reports',
 
   /** Users */
   users: 'users',

@@ -5,7 +5,7 @@ import GetToken from './auth-token';
 
 const StoreUserUnit = () => async (dispatch) => {
   try {
-    const Api = Backend.api + Backend.units;
+    const Api = Backend.pmsUrl(Backend.units);
     const token = await GetToken();
 
     const response = await fetch(Api, {
@@ -19,7 +19,7 @@ const StoreUserUnit = () => async (dispatch) => {
     if (response.status === 403) {
       // Silently ignore forbidden error (no toast)
       console.warn('403 Forbidden response from user unit API');
-      return;  // exit early
+      return; // exit early
     }
 
     // For any other status, parse JSON
@@ -35,7 +35,7 @@ const StoreUserUnit = () => async (dispatch) => {
     // if (
     //   // error.message.includes('403') ||
     //   // error.message.toLowerCase().includes('forbidden')
-    // ) 
+    // )
     {
       console.warn('403 Forbidden error caught in catch block');
       return;
@@ -43,6 +43,5 @@ const StoreUserUnit = () => async (dispatch) => {
     toast.error(error.message);
   }
 };
-
 
 export default StoreUserUnit;
