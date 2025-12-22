@@ -230,6 +230,7 @@ const KeyResults = () => {
 
   const defaultFormValues = {
     objective_id: selectedObjective || '',
+    title: '',
     name: '',
     metric_unit: '%',
     target_type: 'decrease_to',

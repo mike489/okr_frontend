@@ -283,7 +283,6 @@ const CreatePlan = ({
 
       <form onSubmit={formik.handleSubmit}>
         <DialogContent sx={{ px: 3, py: 2 }}>
-          {/* Unit Selection */}
           <FormControl
             fullWidth
             error={formik.touched.unit_id && Boolean(formik.errors.unit_id)}
@@ -682,14 +681,14 @@ CreatePlan.propTypes = {
       title: PropTypes.string,
       name: PropTypes.string,
       description: PropTypes.string,
-      objective_name: PropTypes.string, // Add objective_name to propTypes
+      objective_name: PropTypes.string,
       objective: PropTypes.shape({
         name: PropTypes.string,
         title: PropTypes.string,
       }),
     }),
   ).isRequired,
-  objectives: PropTypes.array, // Optional objectives array
+  objectives: PropTypes.array,
   fiscalYearId: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
   handleSubmission: PropTypes.func.isRequired,

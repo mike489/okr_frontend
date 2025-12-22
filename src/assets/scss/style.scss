@@ -1,5 +1,5 @@
 // color variants
-@import 'themes-vars.module.scss';
+@use 'themes-vars.module' as *;
 
 // third-party
 @import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -54,10 +54,9 @@
 }
 
 *::selection {
-  color:$primaryLight;
-  background-color:$primary800;
+  color: $primaryLight;
+  background-color: $primary800;
 }
-
 
 // ==============================|| ANIMATION KEYFRAMES ||============================== //
 
@@ -133,16 +132,15 @@
   }
 }
 
-
 .ql-container {
-  border: 0;/* Change the border color and thickness */
+  border: 0; /* Change the border color and thickness */
   border-radius: 4px; /* Add rounded corners */
   padding: 5px; /* Optional: add padding inside the container */
 }
 
 .ql-toolbar {
-  border: none; 
-  background-color: "#fcfcfc";
+  border: none;
+  background-color: '#fcfcfc';
 }
 
 .ql-editor {
@@ -181,7 +179,7 @@
 
 /* Target the editor body */
 .ql-container {
-  background-color: #F7F7F8; /* Body background color */
+  background-color: #f7f7f8; /* Body background color */
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
 }
@@ -190,6 +188,4 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
- 
 }
-

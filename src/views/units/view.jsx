@@ -2,13 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import PageContainer from 'ui-component/MainPage';
 import { gridSpacing } from 'store/constant';
-import {
-  Grid,
-  Box,
-  Typography,
-  Stack,
-  TablePagination,
-} from '@mui/material';
+import { Grid, Box, Typography, Stack, TablePagination } from '@mui/material';
 import GetToken from 'utils/auth-token';
 import Backend from 'services/backend';
 import { toast } from 'react-toastify';
@@ -17,7 +11,6 @@ import Fallbacks from 'utils/components/Fallbacks';
 import InitiativeList from '../plan/components/InitiativeList';
 
 const UnitDetails = () => {
-
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedUnit } = location.state || {};
@@ -90,7 +83,7 @@ const UnitDetails = () => {
 
       if (result.success) {
         setData(result?.data || []);
-        setPagination(prev => ({
+        setPagination((prev) => ({
           ...prev,
           total: result.data?.total || 0,
         }));
@@ -159,12 +152,12 @@ const UnitDetails = () => {
   // Pagination handlers
   const handleChangePage = (event, newPage) => {
     console.log('Changing page to:', newPage);
-    setPagination(prev => ({ ...prev, page: newPage }));
+    setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleChangeRowsPerPage = (event) => {
     console.log('Changing rows per page to:', event.target.value);
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       per_page: parseInt(event.target.value, 10),
       page: 0,
@@ -173,7 +166,11 @@ const UnitDetails = () => {
 
   // Initial data loading
   useEffect(() => {
-    console.log('useEffect triggered', { effectiveId, page: pagination.page, per_page: pagination.per_page });
+    console.log('useEffect triggered', {
+      effectiveId,
+      page: pagination.page,
+      per_page: pagination.per_page,
+    });
     if (effectiveId) {
       handleGettingUnitPlan();
       handleFetchingUnits();
@@ -228,16 +225,13 @@ const UnitDetails = () => {
               container
               spacing={gridSpacing}
               sx={{
-
                 paddingRight: { xs: 2, md: 0 },
                 paddingBottom: { xs: 4, md: 4 },
               }}
             >
-
-              <Grid container >
+              <Grid container>
                 <InitiativeList data={data} />
               </Grid>
-
             </Grid>
 
             {pagination.total > pagination.per_page && (

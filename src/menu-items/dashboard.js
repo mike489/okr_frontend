@@ -107,6 +107,7 @@ export const dashboard = () => {
 
     'read_user_session',
     'read_unit_type',
+    'read_role',
   ];
 
   const permissionMap = {
@@ -152,7 +153,7 @@ export const dashboard = () => {
     //   icon: icons.IconTarget,
     // },
 
-    read_user_session: {
+    read_role: {
       id: 'Report',
       title: 'Report',
       url: '/report-monitoring',
